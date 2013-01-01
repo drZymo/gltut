@@ -1,8 +1,8 @@
 #version 150 core
 
-uniform float fade_factor;
 uniform sampler2D textures[2];
 
+in float fade_factor;
 in vec4 pass_Color;
 in vec2 pass_TextureCoord;
 

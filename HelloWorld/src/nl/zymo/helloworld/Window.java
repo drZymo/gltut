@@ -210,7 +210,7 @@ public class Window
 	private int fragmentShaderId;
 	private int programId;
 
-	private int uniform_fade_factor;
+	private int uniform_timer;
 	private int[] uniform_textures = new int[2];
 
 	private void setupShaders()
@@ -233,7 +233,7 @@ public class Window
 		// Texture information will be attribute 2
 		GL20.glBindAttribLocation(programId, 2, "in_TextureCoord");
 
-		uniform_fade_factor = GL20.glGetUniformLocation(programId, "fade_factor");
+		uniform_timer = GL20.glGetUniformLocation(programId, "timer");
 		uniform_textures[0] = GL20.glGetUniformLocation(programId, "textures[0]");
 		uniform_textures[1] = GL20.glGetUniformLocation(programId, "textures[1]");
 
@@ -366,24 +366,21 @@ public class Window
 			switch (Keyboard.getEventKey())
 			{
 			case Keyboard.KEY_1:
-				fade_factor = 0;
 				break;
 			case Keyboard.KEY_2:
-				fade_factor = 0.5f;
 				break;
 			case Keyboard.KEY_3:
-				fade_factor = 1;
 				break;
 			}
 		}
 
-		double milliseconds = getTime();
-		fade_factor = (float) Math.sin(milliseconds * 0.001) * 0.5f + 0.5f;
+		timer = (float)getTime() * 0.001f;
+		
 
 		render();
 	}
 
-	private float fade_factor = 0;
+	private float timer = 0;
 
 	private void render()
 	{
@@ -391,7 +388,7 @@ public class Window
 
 		GL20.glUseProgram(programId);
 
-		GL20.glUniform1f(uniform_fade_factor, fade_factor);
+		GL20.glUniform1f(uniform_timer, timer);
 
 		// Bind the texture
 		GL13.glActiveTexture(GL13.GL_TEXTURE0);
