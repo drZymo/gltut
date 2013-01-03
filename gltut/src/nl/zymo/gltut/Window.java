@@ -129,35 +129,12 @@ public class Window
 		this.exitOnGLError("destroyVertexArray");
 	}
 
-	private void applyOffsetToVertexArray(float offsetX, float offsetY)
-	{
-		FloatBuffer vertexBuffer = BufferUtils.createFloatBuffer(vertexData.length);
-		for (int i = 0; i < 3; i++)
-		{
-			vertexBuffer.put(vertexData[i * 8 + 0] + offsetX);
-			vertexBuffer.put(vertexData[i * 8 + 1] + offsetY);
-			vertexBuffer.put(vertexData[i * 8 + 2]);
-			vertexBuffer.put(vertexData[i * 8 + 3]);
-			vertexBuffer.put(vertexData[i * 8 + 4]);
-			vertexBuffer.put(vertexData[i * 8 + 5]);
-			vertexBuffer.put(vertexData[i * 8 + 6]);
-			vertexBuffer.put(vertexData[i * 8 + 7]);
-		}
-		vertexBuffer.flip();
-
-		GL30.glBindVertexArray(vertexArrayObject);
-
-		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vertexBufferObject);
-		GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, 0, vertexBuffer);
-		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
-
-		GL30.glBindVertexArray(0);
-	}
-
 	private int programId;
 
 	private int attrib_position;
 	private int attrib_color;
+	
+	private int uniform_offset;
 
 	private void createShaderProgram()
 	{
@@ -174,6 +151,8 @@ public class Window
 
 		attrib_position = GL20.glGetAttribLocation(programId, "position");
 		attrib_color = GL20.glGetAttribLocation(programId, "color");
+		
+		uniform_offset = GL20.glGetUniformLocation(programId, "offset");
 
 		GL20.glDetachShader(programId, vertexShaderId);
 		GL20.glDetachShader(programId, fragmentShaderId);
@@ -191,6 +170,8 @@ public class Window
 
 		attrib_position = 0;
 		attrib_color = 0;
+		
+		uniform_offset = 0;
 
 		this.exitOnGLError("destroyShaderProgram");
 	}
@@ -214,14 +195,15 @@ public class Window
 		return shaderId;
 	}
 
+	private float offsetX;
+	private float offsetY;
+	
 	private void logic()
 	{
 		double time = getTime();
 		double theta = (time / 5000) * Math.PI * 2;
-		float offsetX = (float) Math.cos(theta) * 0.5f;
-		float offsetY = (float) Math.sin(theta) * 0.5f;
-
-		applyOffsetToVertexArray(offsetX, offsetY);
+		offsetX = (float) Math.cos(theta) * 0.5f;
+		offsetY = (float) Math.sin(theta) * 0.5f;
 	}
 
 	private void render()
@@ -230,6 +212,8 @@ public class Window
 		GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
 
 		GL20.glUseProgram(programId);
+		
+		GL20.glUniform2f(uniform_offset, offsetX, offsetY);
 
 		GL30.glBindVertexArray(vertexArrayObject);
 		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vertexBufferObject);
