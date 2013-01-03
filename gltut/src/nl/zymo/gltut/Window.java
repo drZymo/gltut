@@ -81,7 +81,11 @@ public class Window
 
 		GL11.glViewport(0, 0, width, height);
 
-		this.exitOnGLError("setupOpenGL");
+		GL11.glEnable(GL11.GL_CULL_FACE);
+		GL11.glCullFace(GL11.GL_BACK);
+		GL11.glFrontFace(GL11.GL_CW);
+
+		exitOnGLError("setupOpenGL");
 	}
 
 	private void destroyOpenGL()
@@ -90,12 +94,90 @@ public class Window
 	}
 
 	private static final float vertexData[] =
-		{ 0.0f, 0.5f, 0.0f, 1.0f, // vertex 1
-			1.0f, 0.0f, 0.0f, 1.0f, // color 1
-			0.5f, -0.366f, 0.0f, 1.0f, // vertex 2
-			0.0f, 1.0f, 0.0f, 1.0f, // color 2
-			-0.5f, -0.366f, 0.0f, 1.0f, // vertex 3
-			0.0f, 0.0f, 1.0f, 1.0f, // color 3
+		{
+			 0.25f,  0.25f, 0.75f, 1.0f,
+			0.0f, 0.0f, 1.0f, 1.0f,
+			 0.25f, -0.25f, 0.75f, 1.0f,
+			0.0f, 0.0f, 1.0f, 1.0f,
+			-0.25f,  0.25f, 0.75f, 1.0f,
+			0.0f, 0.0f, 1.0f, 1.0f,
+			
+			 0.25f, -0.25f, 0.75f, 1.0f,
+			0.0f, 0.0f, 1.0f, 1.0f,
+			-0.25f, -0.25f, 0.75f, 1.0f,
+			0.0f, 0.0f, 1.0f, 1.0f,
+			-0.25f,  0.25f, 0.75f, 1.0f,
+			0.0f, 0.0f, 1.0f, 1.0f,
+			
+			 0.25f,  0.25f, -0.75f, 1.0f,
+			0.8f, 0.8f, 0.8f, 1.0f,
+			-0.25f,  0.25f, -0.75f, 1.0f,
+			0.8f, 0.8f, 0.8f, 1.0f,
+			 0.25f, -0.25f, -0.75f, 1.0f,
+			0.8f, 0.8f, 0.8f, 1.0f,
+			
+			 0.25f, -0.25f, -0.75f, 1.0f,
+			0.8f, 0.8f, 0.8f, 1.0f,
+			-0.25f,  0.25f, -0.75f, 1.0f,
+			0.8f, 0.8f, 0.8f, 1.0f,
+			-0.25f, -0.25f, -0.75f, 1.0f,
+			0.8f, 0.8f, 0.8f, 1.0f,
+			
+			-0.25f,  0.25f,  0.75f, 1.0f,
+			0.0f, 1.0f, 0.0f, 1.0f,
+			-0.25f, -0.25f,  0.75f, 1.0f,
+			0.0f, 1.0f, 0.0f, 1.0f,
+			-0.25f, -0.25f, -0.75f, 1.0f,
+			0.0f, 1.0f, 0.0f, 1.0f,
+			
+			-0.25f,  0.25f,  0.75f, 1.0f,
+			0.0f, 1.0f, 0.0f, 1.0f,
+			-0.25f, -0.25f, -0.75f, 1.0f,
+			0.0f, 1.0f, 0.0f, 1.0f,
+			-0.25f,  0.25f, -0.75f, 1.0f,
+			0.0f, 1.0f, 0.0f, 1.0f,
+			
+			 0.25f,  0.25f,  0.75f, 1.0f,
+			0.5f, 0.5f, 0.0f, 1.0f,
+			 0.25f, -0.25f, -0.75f, 1.0f,
+			0.5f, 0.5f, 0.0f, 1.0f,
+			 0.25f, -0.25f,  0.75f, 1.0f,
+			0.5f, 0.5f, 0.0f, 1.0f,
+			
+			 0.25f,  0.25f,  0.75f, 1.0f,
+			0.5f, 0.5f, 0.0f, 1.0f,
+			 0.25f,  0.25f, -0.75f, 1.0f,
+			0.5f, 0.5f, 0.0f, 1.0f,
+			 0.25f, -0.25f, -0.75f, 1.0f,
+			0.5f, 0.5f, 0.0f, 1.0f,
+			
+			 0.25f,  0.25f, -0.75f, 1.0f,
+			1.0f, 0.0f, 0.0f, 1.0f,
+			 0.25f,  0.25f,  0.75f, 1.0f,
+			1.0f, 0.0f, 0.0f, 1.0f,
+			-0.25f,  0.25f,  0.75f, 1.0f,
+			1.0f, 0.0f, 0.0f, 1.0f,
+			
+			 0.25f,  0.25f, -0.75f, 1.0f,
+			1.0f, 0.0f, 0.0f, 1.0f,
+			-0.25f,  0.25f,  0.75f, 1.0f,
+			1.0f, 0.0f, 0.0f, 1.0f,
+			-0.25f,  0.25f, -0.75f, 1.0f,
+			1.0f, 0.0f, 0.0f, 1.0f,
+			
+			 0.25f, -0.25f, -0.75f, 1.0f,
+			0.0f, 1.0f, 1.0f, 1.0f,
+			-0.25f, -0.25f,  0.75f, 1.0f,
+			0.0f, 1.0f, 1.0f, 1.0f,
+			 0.25f, -0.25f,  0.75f, 1.0f,
+			0.0f, 1.0f, 1.0f, 1.0f,
+			
+			 0.25f, -0.25f, -0.75f, 1.0f,
+			0.0f, 1.0f, 1.0f, 1.0f,
+			-0.25f, -0.25f, -0.75f, 1.0f,
+			0.0f, 1.0f, 1.0f, 1.0f,
+			-0.25f, -0.25f,  0.75f, 1.0f,
+			0.0f, 1.0f, 1.0f, 1.0f,
 		};
 
 	private int vertexArrayObject;
@@ -118,7 +200,7 @@ public class Window
 
 		GL30.glBindVertexArray(0);
 
-		this.exitOnGLError("createVertexArray");
+		exitOnGLError("createVertexArray");
 	}
 
 	private void destroyVertexArray()
@@ -128,7 +210,7 @@ public class Window
 		GL30.glDeleteVertexArrays(vertexArrayObject);
 		vertexArrayObject = 0;
 
-		this.exitOnGLError("destroyVertexArray");
+		exitOnGLError("destroyVertexArray");
 	}
 
 	private int programId;
@@ -166,7 +248,7 @@ public class Window
 		GL20.glDeleteShader(vertexArrayObject);
 		GL20.glDeleteShader(fragmentShaderId);
 
-		this.exitOnGLError("createShaderProgram");
+		exitOnGLError("createShaderProgram");
 	}
 
 	private void destroyShaderProgram()
@@ -180,7 +262,7 @@ public class Window
 		uniform_time = 0;
 		uniform_loopDuration = 0;
 
-		this.exitOnGLError("destroyShaderProgram");
+		exitOnGLError("destroyShaderProgram");
 	}
 	
 	private void initializeShaderProgram()
@@ -205,7 +287,7 @@ public class Window
 			System.exit(-1);
 		}
 
-		this.exitOnGLError("loadShader");
+		exitOnGLError("loadShader");
 
 		return shaderId;
 	}
@@ -236,7 +318,7 @@ public class Window
 		GL20.glEnableVertexAttribArray(attrib_color);
 		GL20.glVertexAttribPointer(attrib_color, 4, GL11.GL_FLOAT, false, 32, 16);
 
-		GL11.glDrawArrays(GL11.GL_TRIANGLES, 0, 3);
+		GL11.glDrawArrays(GL11.GL_TRIANGLES, 0, 36);
 
 		GL20.glDisableVertexAttribArray(attrib_position);
 		GL20.glDisableVertexAttribArray(attrib_color);
@@ -245,7 +327,7 @@ public class Window
 		GL30.glBindVertexArray(0);
 		GL20.glUseProgram(0);
 
-		this.exitOnGLError("render");
+		exitOnGLError("render");
 	}
 
 	/**
