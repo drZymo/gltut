@@ -43,7 +43,8 @@ public class Window
 		while (!Display.isCloseRequested())
 		{
 			// Do a single loop (logic/render)
-			this.loopCycle();
+			logic();
+			render();
 
 			// Force a maximum FPS of about 60
 			Display.sync(60);
@@ -86,7 +87,7 @@ public class Window
 		Display.destroy();
 	}
 
-	private static final float vertices[] =
+	private static final float vertexData[] =
 		{ 0.0f, 0.5f, 0.0f, 1.0f, // vertex 1
 			1.0f, 0.0f, 0.0f, 1.0f, // color 1
 			0.5f, -0.366f, 0.0f, 1.0f, // vertex 2
@@ -101,8 +102,8 @@ public class Window
 	private void createVertexArray()
 	{
 		// Put each 'Vertex' in one FloatBuffer
-		FloatBuffer vertexBuffer = BufferUtils.createFloatBuffer(vertices.length);
-		vertexBuffer.put(vertices);
+		FloatBuffer vertexBuffer = BufferUtils.createFloatBuffer(vertexData.length);
+		vertexBuffer.put(vertexData);
 		vertexBuffer.flip();
 
 		vertexArrayObject = GL30.glGenVertexArrays();
@@ -110,7 +111,7 @@ public class Window
 
 		vertexBufferObject = GL15.glGenBuffers();
 		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vertexBufferObject);
-		GL15.glBufferData(GL15.GL_ARRAY_BUFFER, vertexBuffer, GL15.GL_STATIC_DRAW);
+		GL15.glBufferData(GL15.GL_ARRAY_BUFFER, vertexBuffer, GL15.GL_STREAM_DRAW);
 		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
 
 		GL30.glBindVertexArray(0);
@@ -126,6 +127,31 @@ public class Window
 		vertexArrayObject = 0;
 
 		this.exitOnGLError("destroyVertexArray");
+	}
+
+	private void applyOffsetToVertexArray(float offsetX, float offsetY)
+	{
+		FloatBuffer vertexBuffer = BufferUtils.createFloatBuffer(vertexData.length);
+		for (int i = 0; i < 3; i++)
+		{
+			vertexBuffer.put(vertexData[i * 8 + 0] + offsetX);
+			vertexBuffer.put(vertexData[i * 8 + 1] + offsetY);
+			vertexBuffer.put(vertexData[i * 8 + 2]);
+			vertexBuffer.put(vertexData[i * 8 + 3]);
+			vertexBuffer.put(vertexData[i * 8 + 4]);
+			vertexBuffer.put(vertexData[i * 8 + 5]);
+			vertexBuffer.put(vertexData[i * 8 + 6]);
+			vertexBuffer.put(vertexData[i * 8 + 7]);
+		}
+		vertexBuffer.flip();
+
+		GL30.glBindVertexArray(vertexArrayObject);
+
+		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vertexBufferObject);
+		GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, 0, vertexBuffer);
+		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+
+		GL30.glBindVertexArray(0);
 	}
 
 	private int programId;
@@ -188,9 +214,14 @@ public class Window
 		return shaderId;
 	}
 
-	private void loopCycle()
+	private void logic()
 	{
-		render();
+		double time = getTime();
+		double theta = (time / 5000) * Math.PI * 2;
+		float offsetX = (float) Math.cos(theta) * 0.5f;
+		float offsetY = (float) Math.sin(theta) * 0.5f;
+
+		applyOffsetToVertexArray(offsetX, offsetY);
 	}
 
 	private void render()
