@@ -101,9 +101,9 @@ public class Window
 
 		vertexArrayId = GL30.glGenVertexArrays();
 		GL30.glBindVertexArray(vertexArrayId);
-		
+
 		positionBufferObject = GL15.glGenBuffers();
-		
+
 		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, positionBufferObject);
 		GL15.glBufferData(GL15.GL_ARRAY_BUFFER, vertexPositionsBuffer, GL15.GL_STATIC_DRAW);
 		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
@@ -113,16 +113,14 @@ public class Window
 		this.exitOnGLError("setupVertices");
 	}
 
-	private int vertexShaderId;
-	private int fragmentShaderId;
 	private int programId;
+
+	private int attrib_position;
 
 	private void setupShaders()
 	{
-		// Load the vertex shader
-		vertexShaderId = this.loadShader("shaders/vertex_shader.glsl", GL20.GL_VERTEX_SHADER);
-		// Load the fragment shader
-		fragmentShaderId = this.loadShader("shaders/fragment_shader.glsl", GL20.GL_FRAGMENT_SHADER);
+		int vertexShaderId = this.loadShader("shaders/vertex_shader.glsl", GL20.GL_VERTEX_SHADER);
+		int fragmentShaderId = this.loadShader("shaders/fragment_shader.glsl", GL20.GL_FRAGMENT_SHADER);
 
 		// Create a new shader program that links both shaders
 		programId = GL20.glCreateProgram();
@@ -131,6 +129,14 @@ public class Window
 		GL20.glLinkProgram(programId);
 
 		GL20.glValidateProgram(programId);
+
+		attrib_position = GL20.glGetAttribLocation(programId, "position");
+
+		GL20.glDetachShader(programId, vertexShaderId);
+		GL20.glDetachShader(programId, fragmentShaderId);
+
+		GL20.glDeleteShader(vertexArrayId);
+		GL20.glDeleteShader(fragmentShaderId);
 
 		this.exitOnGLError("setupShaders");
 	}
@@ -163,26 +169,23 @@ public class Window
 	{
 		GL11.glClearColor(0.0f, 0.0f, 0.0f, 0f);
 		GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
-		this.exitOnGLError("render 1");
 
 		GL20.glUseProgram(programId);
-		this.exitOnGLError("render 2");
 
 		GL30.glBindVertexArray(vertexArrayId);
 		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, positionBufferObject);
-		GL20.glEnableVertexAttribArray(0);
-		GL20.glVertexAttribPointer(0, 4, GL11.GL_FLOAT, false, 0, 0);
-		this.exitOnGLError("render 3");
+
+		GL20.glEnableVertexAttribArray(attrib_position);
+		GL20.glVertexAttribPointer(attrib_position, 4, GL11.GL_FLOAT, false, 0, 0);
 
 		GL11.glDrawArrays(GL11.GL_TRIANGLES, 0, 3);
-		this.exitOnGLError("render 4");
 
 		GL20.glDisableVertexAttribArray(0);
 		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
 		GL30.glBindVertexArray(0);
 		GL20.glUseProgram(0);
 
-		this.exitOnGLError("render 5");
+		this.exitOnGLError("render");
 	}
 
 	/**
