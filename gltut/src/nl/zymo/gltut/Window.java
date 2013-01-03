@@ -53,7 +53,7 @@ public class Window
 
 		destroyShaderProgram();
 		destroyVertexArray();
-		
+
 		destroyOpenGL();
 	}
 
@@ -86,8 +86,14 @@ public class Window
 		Display.destroy();
 	}
 
-	private static final float vertices[] = { 0.75f, 0.75f, 0.0f, 1.0f, 0.75f, -0.75f, 0.0f, 1.0f, -0.75f,
-			-0.75f, 0.0f, 1.0f, };
+	private static final float vertices[] =
+		{ 0.0f, 0.5f, 0.0f, 1.0f, // vertex 1
+			0.5f, -0.366f, 0.0f, 1.0f, // vertex 2
+			-0.5f, -0.366f, 0.0f, 1.0f, // vertex 3
+			1.0f, 0.0f, 0.0f, 1.0f, // color 1
+			0.0f, 1.0f, 0.0f, 1.0f, // color 2
+			0.0f, 0.0f, 1.0f, 1.0f, // color 3
+		};
 
 	private int vertexArrayObject;
 	private int vertexBufferObject;
@@ -111,7 +117,7 @@ public class Window
 
 		this.exitOnGLError("createVertexArray");
 	}
-	
+
 	private void destroyVertexArray()
 	{
 		GL15.glDeleteBuffers(vertexBufferObject);
@@ -120,11 +126,12 @@ public class Window
 		vertexArrayObject = 0;
 
 		this.exitOnGLError("destroyVertexArray");
-}
+	}
 
 	private int programId;
 
 	private int attrib_position;
+	private int attrib_color;
 
 	private void createShaderProgram()
 	{
@@ -140,6 +147,7 @@ public class Window
 		GL20.glValidateProgram(programId);
 
 		attrib_position = GL20.glGetAttribLocation(programId, "position");
+		attrib_color = GL20.glGetAttribLocation(programId, "color");
 
 		GL20.glDetachShader(programId, vertexShaderId);
 		GL20.glDetachShader(programId, fragmentShaderId);
@@ -149,14 +157,15 @@ public class Window
 
 		this.exitOnGLError("createShaderProgram");
 	}
-	
+
 	private void destroyShaderProgram()
 	{
 		GL20.glDeleteProgram(programId);
 		programId = 0;
-		
+
 		attrib_position = 0;
-		
+		attrib_color = 0;
+
 		this.exitOnGLError("destroyShaderProgram");
 	}
 
@@ -196,11 +205,14 @@ public class Window
 
 		GL20.glEnableVertexAttribArray(attrib_position);
 		GL20.glVertexAttribPointer(attrib_position, 4, GL11.GL_FLOAT, false, 0, 0);
+		GL20.glEnableVertexAttribArray(attrib_color);
+		GL20.glVertexAttribPointer(attrib_color, 4, GL11.GL_FLOAT, false, 0, 48);
 
 		GL11.glDrawArrays(GL11.GL_TRIANGLES, 0, 3);
 
-		GL20.glDisableVertexAttribArray(0);
-		
+		GL20.glDisableVertexAttribArray(attrib_position);
+		GL20.glDisableVertexAttribArray(attrib_color);
+
 		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
 		GL30.glBindVertexArray(0);
 		GL20.glUseProgram(0);
