@@ -39,6 +39,8 @@ public class Window
 
 		createVertexArray();
 		createShaderProgram();
+		
+		initializeShaderProgram();
 
 		while (!Display.isCloseRequested())
 		{
@@ -178,6 +180,13 @@ public class Window
 
 		this.exitOnGLError("destroyShaderProgram");
 	}
+	
+	private void initializeShaderProgram()
+	{
+		GL20.glUseProgram(programId);
+		GL20.glUniform1f(uniform_loopDuration, loopDuration);
+		GL20.glUseProgram(0);
+	}
 
 	private int loadShader(String ref, int type)
 	{
@@ -199,12 +208,11 @@ public class Window
 	}
 
 	private float time;
-	private float loopDuration;
+	private float loopDuration = 5;
 	
 	private void logic()
 	{
 		time = (float)getTime();
-		loopDuration = 5;
 	}
 
 	private void render()
@@ -215,7 +223,6 @@ public class Window
 		GL20.glUseProgram(programId);
 		
 		GL20.glUniform1f(uniform_time, time);
-		GL20.glUniform1f(uniform_loopDuration, loopDuration);
 
 		GL30.glBindVertexArray(vertexArrayObject);
 		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vertexBufferObject);
