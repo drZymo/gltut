@@ -88,10 +88,10 @@ public class Window
 
 	private static final float vertices[] =
 		{ 0.0f, 0.5f, 0.0f, 1.0f, // vertex 1
-			0.5f, -0.366f, 0.0f, 1.0f, // vertex 2
-			-0.5f, -0.366f, 0.0f, 1.0f, // vertex 3
 			1.0f, 0.0f, 0.0f, 1.0f, // color 1
+			0.5f, -0.366f, 0.0f, 1.0f, // vertex 2
 			0.0f, 1.0f, 0.0f, 1.0f, // color 2
+			-0.5f, -0.366f, 0.0f, 1.0f, // vertex 3
 			0.0f, 0.0f, 1.0f, 1.0f, // color 3
 		};
 
@@ -204,9 +204,9 @@ public class Window
 		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vertexBufferObject);
 
 		GL20.glEnableVertexAttribArray(attrib_position);
-		GL20.glVertexAttribPointer(attrib_position, 4, GL11.GL_FLOAT, false, 0, 0);
+		GL20.glVertexAttribPointer(attrib_position, 4, GL11.GL_FLOAT, false, 32, 0);
 		GL20.glEnableVertexAttribArray(attrib_color);
-		GL20.glVertexAttribPointer(attrib_color, 4, GL11.GL_FLOAT, false, 0, 48);
+		GL20.glVertexAttribPointer(attrib_color, 4, GL11.GL_FLOAT, false, 32, 16);
 
 		GL11.glDrawArrays(GL11.GL_TRIANGLES, 0, 3);
 
