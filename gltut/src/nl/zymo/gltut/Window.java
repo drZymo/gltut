@@ -37,8 +37,8 @@ public class Window
 	{
 		setupOpenGL();
 
-		setupVertices();
-		setupShaders();
+		createVertexArray();
+		createShaderProgram();
 
 		while (!Display.isCloseRequested())
 		{
@@ -51,8 +51,10 @@ public class Window
 			Display.update();
 		}
 
-		// Destroy OpenGL (Display)
-		this.destroyOpenGL();
+		destroyShaderProgram();
+		destroyVertexArray();
+		
+		destroyOpenGL();
 	}
 
 	private void setupOpenGL()
@@ -81,43 +83,50 @@ public class Window
 
 	private void destroyOpenGL()
 	{
-		this.exitOnGLError("destroyOpenGL");
-
 		Display.destroy();
 	}
 
-	private static final float vertexPositions[] = { 0.75f, 0.75f, 0.0f, 1.0f, 0.75f, -0.75f, 0.0f, 1.0f, -0.75f,
+	private static final float vertices[] = { 0.75f, 0.75f, 0.0f, 1.0f, 0.75f, -0.75f, 0.0f, 1.0f, -0.75f,
 			-0.75f, 0.0f, 1.0f, };
 
-	private int vertexArrayId;
-	private int positionBufferObject;
+	private int vertexArrayObject;
+	private int vertexBufferObject;
 
-	private void setupVertices()
+	private void createVertexArray()
 	{
 		// Put each 'Vertex' in one FloatBuffer
-		FloatBuffer vertexPositionsBuffer = BufferUtils.createFloatBuffer(vertexPositions.length);
-		vertexPositionsBuffer.put(vertexPositions);
-		vertexPositionsBuffer.flip();
+		FloatBuffer vertexBuffer = BufferUtils.createFloatBuffer(vertices.length);
+		vertexBuffer.put(vertices);
+		vertexBuffer.flip();
 
-		vertexArrayId = GL30.glGenVertexArrays();
-		GL30.glBindVertexArray(vertexArrayId);
+		vertexArrayObject = GL30.glGenVertexArrays();
+		GL30.glBindVertexArray(vertexArrayObject);
 
-		positionBufferObject = GL15.glGenBuffers();
-
-		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, positionBufferObject);
-		GL15.glBufferData(GL15.GL_ARRAY_BUFFER, vertexPositionsBuffer, GL15.GL_STATIC_DRAW);
+		vertexBufferObject = GL15.glGenBuffers();
+		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vertexBufferObject);
+		GL15.glBufferData(GL15.GL_ARRAY_BUFFER, vertexBuffer, GL15.GL_STATIC_DRAW);
 		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
 
 		GL30.glBindVertexArray(0);
 
-		this.exitOnGLError("setupVertices");
+		this.exitOnGLError("createVertexArray");
 	}
+	
+	private void destroyVertexArray()
+	{
+		GL15.glDeleteBuffers(vertexBufferObject);
+		vertexBufferObject = 0;
+		GL30.glDeleteVertexArrays(vertexArrayObject);
+		vertexArrayObject = 0;
+
+		this.exitOnGLError("destroyVertexArray");
+}
 
 	private int programId;
 
 	private int attrib_position;
 
-	private void setupShaders()
+	private void createShaderProgram()
 	{
 		int vertexShaderId = this.loadShader("shaders/vertex_shader.glsl", GL20.GL_VERTEX_SHADER);
 		int fragmentShaderId = this.loadShader("shaders/fragment_shader.glsl", GL20.GL_FRAGMENT_SHADER);
@@ -135,10 +144,20 @@ public class Window
 		GL20.glDetachShader(programId, vertexShaderId);
 		GL20.glDetachShader(programId, fragmentShaderId);
 
-		GL20.glDeleteShader(vertexArrayId);
+		GL20.glDeleteShader(vertexArrayObject);
 		GL20.glDeleteShader(fragmentShaderId);
 
-		this.exitOnGLError("setupShaders");
+		this.exitOnGLError("createShaderProgram");
+	}
+	
+	private void destroyShaderProgram()
+	{
+		GL20.glDeleteProgram(programId);
+		programId = 0;
+		
+		attrib_position = 0;
+		
+		this.exitOnGLError("destroyShaderProgram");
 	}
 
 	private int loadShader(String ref, int type)
@@ -172,8 +191,8 @@ public class Window
 
 		GL20.glUseProgram(programId);
 
-		GL30.glBindVertexArray(vertexArrayId);
-		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, positionBufferObject);
+		GL30.glBindVertexArray(vertexArrayObject);
+		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vertexBufferObject);
 
 		GL20.glEnableVertexAttribArray(attrib_position);
 		GL20.glVertexAttribPointer(attrib_position, 4, GL11.GL_FLOAT, false, 0, 0);
@@ -181,6 +200,7 @@ public class Window
 		GL11.glDrawArrays(GL11.GL_TRIANGLES, 0, 3);
 
 		GL20.glDisableVertexAttribArray(0);
+		
 		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
 		GL30.glBindVertexArray(0);
 		GL20.glUseProgram(0);
