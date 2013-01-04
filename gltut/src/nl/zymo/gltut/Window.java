@@ -230,12 +230,15 @@ public class Window
 	private void initializeShaderProgram()
 	{
 		float frustumScale = 1.0f; float zNear = 0.5f; float zFar = 3.0f;
+		float ex = 0f; float ey = 0f; float ez = 1f;
 		float[] perspectiveMatrix = new float[16];
 		perspectiveMatrix[0] = (frustumScale * height) / width; // NOTE!: Redo this when window is resized
 		perspectiveMatrix[5] = frustumScale;
+		perspectiveMatrix[12] = ex;
+		perspectiveMatrix[13] = ey;
 		perspectiveMatrix[10] = (zFar + zNear) / (zNear - zFar);
 		perspectiveMatrix[14] = (2 * zFar * zNear) / (zNear - zFar);
-		perspectiveMatrix[11] = -1.0f;
+		perspectiveMatrix[11] = -ez;
 
 		FloatBuffer perspectiveMatrixBuffer = BufferUtils.createFloatBuffer(16);
 		perspectiveMatrixBuffer.put(perspectiveMatrix);
