@@ -183,14 +183,8 @@ public class Window
 	private int attrib_color;
 	
 	private int uniform_offset;
-	private int uniform_zNear;
-	private int uniform_zFar;
-	private int uniform_frustumScale;
+	private int uniform_perspectiveMatrix;
 	
-	private float zNear = 1.0f;
-	private float zFar = 3.0f;
-	private float frustumScale = 1.0f;
-
 	private void createShaderProgram()
 	{
 		int vertexShaderId = this.loadShader("shaders/vertex_shader.glsl", GL20.GL_VERTEX_SHADER);
@@ -208,9 +202,7 @@ public class Window
 		attrib_color = GL20.glGetAttribLocation(programId, "color");
 		
 		uniform_offset = GL20.glGetUniformLocation(programId, "offset");
-		uniform_zNear = GL20.glGetUniformLocation(programId, "zNear");
-		uniform_zFar = GL20.glGetUniformLocation(programId, "zFar");
-		uniform_frustumScale = GL20.glGetUniformLocation(programId, "frustumScale");
+		uniform_perspectiveMatrix = GL20.glGetUniformLocation(programId, "perspectiveMatrix");
 
 		GL20.glDetachShader(programId, vertexShaderId);
 		GL20.glDetachShader(programId, fragmentShaderId);
@@ -230,19 +222,23 @@ public class Window
 		attrib_color = 0;
 		
 		uniform_offset = 0;
-		uniform_zNear = 0;
-		uniform_zFar = 0;
-		uniform_frustumScale = 0;
+		uniform_perspectiveMatrix = 0;
 
 		exitOnGLError("destroyShaderProgram");
 	}
 	
 	private void initializeShaderProgram()
 	{
+		float frustumScale = 1.0f; float zNear = 0.5f; float zFar = 3.0f;
+		FloatBuffer perspectiveMatrix = BufferUtils.createFloatBuffer(16);
+		perspectiveMatrix.put(0, frustumScale);
+		perspectiveMatrix.put(5, frustumScale);
+		perspectiveMatrix.put(10, (zFar + zNear) / (zNear - zFar));
+		perspectiveMatrix.put(14, (2 * zFar * zNear) / (zNear - zFar));
+		perspectiveMatrix.put(11, -1.0f);
+
 		GL20.glUseProgram(programId);
-		GL20.glUniform1f(uniform_zNear, zNear);
-		GL20.glUniform1f(uniform_zFar, zFar);
-		GL20.glUniform1f(uniform_frustumScale, frustumScale);
+		GL20.glUniformMatrix4(uniform_perspectiveMatrix, false, perspectiveMatrix);
 		GL20.glUseProgram(0);
 	}
 
