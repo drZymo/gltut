@@ -220,7 +220,6 @@ public class Window
 	
 	private int uniform_time;
 	private int uniform_loopDuration;
-	private int uniform_fragLoopDuration;
 
 	private void createShaderProgram()
 	{
@@ -240,7 +239,6 @@ public class Window
 		
 		uniform_time = GL20.glGetUniformLocation(programId, "time");
 		uniform_loopDuration = GL20.glGetUniformLocation(programId, "loopDuration");
-		uniform_fragLoopDuration = GL20.glGetUniformLocation(programId, "fragLoopDuration");
 
 		GL20.glDetachShader(programId, vertexShaderId);
 		GL20.glDetachShader(programId, fragmentShaderId);
@@ -269,7 +267,6 @@ public class Window
 	{
 		GL20.glUseProgram(programId);
 		GL20.glUniform1f(uniform_loopDuration, loopDuration);
-		GL20.glUniform1f(uniform_fragLoopDuration, fragLoopDuration);
 		GL20.glUseProgram(0);
 	}
 
