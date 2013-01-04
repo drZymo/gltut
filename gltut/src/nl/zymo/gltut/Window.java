@@ -220,25 +220,29 @@ public class Window
 
 		attrib_position = 0;
 		attrib_color = 0;
-		
+
 		uniform_offset = 0;
 		uniform_perspectiveMatrix = 0;
 
 		exitOnGLError("destroyShaderProgram");
 	}
-	
+
 	private void initializeShaderProgram()
 	{
 		float frustumScale = 1.0f; float zNear = 0.5f; float zFar = 3.0f;
-		FloatBuffer perspectiveMatrix = BufferUtils.createFloatBuffer(16);
-		perspectiveMatrix.put(0, frustumScale);
-		perspectiveMatrix.put(5, frustumScale);
-		perspectiveMatrix.put(10, (zFar + zNear) / (zNear - zFar));
-		perspectiveMatrix.put(14, (2 * zFar * zNear) / (zNear - zFar));
-		perspectiveMatrix.put(11, -1.0f);
+		float[] perspectiveMatrix = new float[16];
+		perspectiveMatrix[0] = (frustumScale * height) / width; // NOTE!: Redo this when window is resized
+		perspectiveMatrix[5] = frustumScale;
+		perspectiveMatrix[10] = (zFar + zNear) / (zNear - zFar);
+		perspectiveMatrix[14] = (2 * zFar * zNear) / (zNear - zFar);
+		perspectiveMatrix[11] = -1.0f;
+
+		FloatBuffer perspectiveMatrixBuffer = BufferUtils.createFloatBuffer(16);
+		perspectiveMatrixBuffer.put(perspectiveMatrix);
+		perspectiveMatrixBuffer.flip();
 
 		GL20.glUseProgram(programId);
-		GL20.glUniformMatrix4(uniform_perspectiveMatrix, false, perspectiveMatrix);
+		GL20.glUniformMatrix4(uniform_perspectiveMatrix, false, perspectiveMatrixBuffer);
 		GL20.glUseProgram(0);
 	}
 
