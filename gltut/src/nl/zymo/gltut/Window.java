@@ -39,7 +39,7 @@ public class Window
 
 		createVertexArray();
 		createShaderProgram();
-		
+
 		initializeShaderProgram();
 
 		while (!Display.isCloseRequested())
@@ -181,10 +181,10 @@ public class Window
 
 	private int attrib_position;
 	private int attrib_color;
-	
+
 	private int uniform_offset;
 	private int uniform_perspectiveMatrix;
-	
+
 	private void createShaderProgram()
 	{
 		int vertexShaderId = this.loadShader("shaders/vertex_shader.glsl", GL20.GL_VERTEX_SHADER);
@@ -200,7 +200,7 @@ public class Window
 
 		attrib_position = GL20.glGetAttribLocation(programId, "position");
 		attrib_color = GL20.glGetAttribLocation(programId, "color");
-		
+
 		uniform_offset = GL20.glGetUniformLocation(programId, "offset");
 		uniform_perspectiveMatrix = GL20.glGetUniformLocation(programId, "perspectiveMatrix");
 
@@ -267,7 +267,7 @@ public class Window
 
 	private float offsetX;
 	private float offsetY;
-	
+
 	private void logic()
 	{
 		double time = getTime();
@@ -282,7 +282,7 @@ public class Window
 		GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
 
 		GL20.glUseProgram(programId);
-		
+
 		GL20.glUniform2f(uniform_offset, offsetX, offsetY);
 
 		GL30.glBindVertexArray(vertexArrayObject);
@@ -307,7 +307,7 @@ public class Window
 
 	/**
 	 * Get the time in seconds
-	 * 
+	 *
 	 * @return The system time in seconds
 	 */
 	public double getTime()
