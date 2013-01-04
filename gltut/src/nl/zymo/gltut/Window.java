@@ -218,8 +218,7 @@ public class Window
 	private int attrib_position;
 	private int attrib_color;
 	
-	private int uniform_time;
-	private int uniform_loopDuration;
+	private int uniform_offset;
 
 	private void createShaderProgram()
 	{
@@ -237,8 +236,7 @@ public class Window
 		attrib_position = GL20.glGetAttribLocation(programId, "position");
 		attrib_color = GL20.glGetAttribLocation(programId, "color");
 		
-		uniform_time = GL20.glGetUniformLocation(programId, "time");
-		uniform_loopDuration = GL20.glGetUniformLocation(programId, "loopDuration");
+		uniform_offset = GL20.glGetUniformLocation(programId, "offset");
 
 		GL20.glDetachShader(programId, vertexShaderId);
 		GL20.glDetachShader(programId, fragmentShaderId);
@@ -257,8 +255,7 @@ public class Window
 		attrib_position = 0;
 		attrib_color = 0;
 		
-		uniform_time = 0;
-		uniform_loopDuration = 0;
+		uniform_offset = 0;
 
 		exitOnGLError("destroyShaderProgram");
 	}
@@ -266,7 +263,6 @@ public class Window
 	private void initializeShaderProgram()
 	{
 		GL20.glUseProgram(programId);
-		GL20.glUniform1f(uniform_loopDuration, loopDuration);
 		GL20.glUseProgram(0);
 	}
 
@@ -289,13 +285,15 @@ public class Window
 		return shaderId;
 	}
 
-	private float time;
-	private float loopDuration = 5;
-	private float fragLoopDuration = 2;
+	private float offsetX;
+	private float offsetY;
 	
 	private void logic()
 	{
-		time = (float)getTime();
+		double time = getTime();
+		double theta = (Math.PI * 2.0) * time / 5;
+		offsetX = (float)Math.cos(theta) * 0.5f;
+		offsetY = (float)Math.sin(theta) * 0.5f;
 	}
 
 	private void render()
@@ -305,7 +303,7 @@ public class Window
 
 		GL20.glUseProgram(programId);
 		
-		GL20.glUniform1f(uniform_time, time);
+		GL20.glUniform2f(uniform_offset, offsetX, offsetY);
 
 		GL30.glBindVertexArray(vertexArrayObject);
 		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vertexBufferObject);
