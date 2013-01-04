@@ -272,8 +272,8 @@ public class Window
 	{
 		double time = getTime();
 		double theta = (Math.PI * 2.0) * time / 5;
-		offsetX = (float)Math.cos(theta) * 0.5f;
-		offsetY = (float)Math.sin(theta) * 0.5f;
+		offsetX = (float)Math.cos(theta) * 0.75f;
+		offsetY = (float)Math.sin(theta) * 0.75f;
 	}
 
 	private void render()
