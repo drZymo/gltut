@@ -229,8 +229,11 @@ public class Window
 
 	private void initializeShaderProgram()
 	{
-		float frustumScale = 1.0f; float zNear = 0.5f; float zFar = 3.0f;
+		float zNear = 0.5f; float zFar = 3.0f;
 		float ex = 0f; float ey = 0f; float ez = 1f;
+		float fov = 60.0f;
+
+		float frustumScale = (float)(1.0 / Math.tan(fov * Math.PI / 360.0));
 		float[] perspectiveMatrix = new float[16];
 		perspectiveMatrix[0] = (frustumScale * height) / width; // NOTE!: Redo this when window is resized
 		perspectiveMatrix[5] = frustumScale;
