@@ -37,8 +37,9 @@ public class Window
 	{
 		setupOpenGL();
 
-		createVertexArray();
 		createShaderProgram();
+		createVertexBuffers();
+		createVertexArray();
 
 		initializeShaderProgram();
 
@@ -54,8 +55,9 @@ public class Window
 			Display.update();
 		}
 
-		destroyShaderProgram();
 		destroyVertexArray();
+		destroyVertexBuffers();
+		destroyShaderProgram();
 
 		destroyOpenGL();
 	}
@@ -144,23 +146,45 @@ public class Window
 		-0.25f, -0.25f, -1.25f, 1.0f,	0.0f, 1.0f, 1.0f, 1.0f,
 		};
 
-	private int vertexArrayObject;
 	private int vertexBufferObject;
 
-	private void createVertexArray()
+	private void createVertexBuffers()
 	{
-		// Put each 'Vertex' in one FloatBuffer
 		FloatBuffer vertexBuffer = BufferUtils.createFloatBuffer(vertexData.length);
 		vertexBuffer.put(vertexData);
 		vertexBuffer.flip();
 
+		vertexBufferObject = GL15.glGenBuffers();
+		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vertexBufferObject);
+
+		GL15.glBufferData(GL15.GL_ARRAY_BUFFER, vertexBuffer, GL15.GL_STATIC_DRAW);
+
+		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+
+		exitOnGLError("createVertexBuffers");
+	}
+
+	private void destroyVertexBuffers()
+	{
+		GL15.glDeleteBuffers(vertexBufferObject);
+		vertexBufferObject = 0;
+
+		exitOnGLError("destroyVertexBuffers");
+	}
+
+	private int vertexArrayObject;
+
+	private void createVertexArray()
+	{
 		vertexArrayObject = GL30.glGenVertexArrays();
 		GL30.glBindVertexArray(vertexArrayObject);
 
-		vertexBufferObject = GL15.glGenBuffers();
 		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vertexBufferObject);
-		GL15.glBufferData(GL15.GL_ARRAY_BUFFER, vertexBuffer, GL15.GL_STREAM_DRAW);
-		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+
+		GL20.glEnableVertexAttribArray(attrib_position);
+		GL20.glVertexAttribPointer(attrib_position, 4, GL11.GL_FLOAT, false, 32, 0);
+		GL20.glEnableVertexAttribArray(attrib_color);
+		GL20.glVertexAttribPointer(attrib_color, 4, GL11.GL_FLOAT, false, 32, 16);
 
 		GL30.glBindVertexArray(0);
 
@@ -169,8 +193,6 @@ public class Window
 
 	private void destroyVertexArray()
 	{
-		GL15.glDeleteBuffers(vertexBufferObject);
-		vertexBufferObject = 0;
 		GL30.glDeleteVertexArrays(vertexArrayObject);
 		vertexArrayObject = 0;
 
@@ -292,20 +314,9 @@ public class Window
 		GL20.glUniform2f(uniform_offset, offsetX, offsetY);
 
 		GL30.glBindVertexArray(vertexArrayObject);
-		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vertexBufferObject);
-
-		GL20.glEnableVertexAttribArray(attrib_position);
-		GL20.glVertexAttribPointer(attrib_position, 4, GL11.GL_FLOAT, false, 32, 0);
-		GL20.glEnableVertexAttribArray(attrib_color);
-		GL20.glVertexAttribPointer(attrib_color, 4, GL11.GL_FLOAT, false, 32, 16);
-
 		GL11.glDrawArrays(GL11.GL_TRIANGLES, 0, 36);
-
-		GL20.glDisableVertexAttribArray(attrib_position);
-		GL20.glDisableVertexAttribArray(attrib_color);
-
-		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
 		GL30.glBindVertexArray(0);
+
 		GL20.glUseProgram(0);
 
 		exitOnGLError("render");
