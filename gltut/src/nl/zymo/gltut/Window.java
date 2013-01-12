@@ -326,8 +326,13 @@ public class Window
 		return shaderId;
 	}
 
+	private float offsetZ = -1.0f;
+
 	private void logic()
 	{
+		double time = getTime();
+		double theta = (time / 5.0) * 2 * Math.PI;
+		offsetZ = (float)Math.sin(theta) * 0.75f + 0.25f;
 	}
 
 	private void render()
@@ -343,7 +348,7 @@ public class Window
 		GL20.glUniform3f(uniform_offset, 0.0f, 0.0f, 0.0f);
 		GL11.glDrawElements(GL11.GL_TRIANGLES, indexData.length, GL11.GL_UNSIGNED_BYTE, 0);
 
-		GL20.glUniform3f(uniform_offset, 0.0f, 0.0f, -1.0f);
+		GL20.glUniform3f(uniform_offset, 0.0f, 0.0f, -offsetZ);
 		GL32.glDrawElementsBaseVertex(GL11.GL_TRIANGLES, indexData.length, GL11.GL_UNSIGNED_BYTE, 0, 18);
 
 		GL30.glBindVertexArray(0);
