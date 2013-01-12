@@ -342,15 +342,8 @@ public class Window
 		return shaderId;
 	}
 
-	private float offsetX;
-	private float offsetY;
-
 	private void logic()
 	{
-		double time = getTime();
-		double theta = (Math.PI * 2.0) * time / 5;
-		offsetX = (float)Math.cos(theta) * 0.75f;
-		offsetY = (float)Math.sin(theta) * 0.75f;
 	}
 
 	private void render()
