@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 
 import org.lwjgl.BufferUtils;
@@ -39,7 +40,7 @@ public class Window
 
 		createShaderProgram();
 		createVertexBuffers();
-		createVertexArray();
+		createVertexArrays();
 
 		initializeShaderProgram();
 
@@ -55,7 +56,7 @@ public class Window
 			Display.update();
 		}
 
-		destroyVertexArray();
+		destroyVertexArrays();
 		destroyVertexBuffers();
 		destroyShaderProgram();
 
@@ -162,6 +163,7 @@ public class Window
 	};
 
 	private int vertexBufferObject;
+	private int elementBufferObject;
 
 	private void createVertexBuffers()
 	{
@@ -171,10 +173,17 @@ public class Window
 
 		vertexBufferObject = GL15.glGenBuffers();
 		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vertexBufferObject);
-
 		GL15.glBufferData(GL15.GL_ARRAY_BUFFER, vertexBuffer, GL15.GL_STATIC_DRAW);
-
 		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+
+		ByteBuffer elementBuffer = BufferUtils.createByteBuffer(indexData.length);
+		elementBuffer.put(indexData);
+		elementBuffer.flip();
+
+		elementBufferObject = GL15.glGenBuffers();
+		GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, elementBufferObject);
+		GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, elementBuffer, GL15.GL_STATIC_DRAW);
+		GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
 
 		exitOnGLError("createVertexBuffers");
 	}
@@ -187,31 +196,56 @@ public class Window
 		exitOnGLError("destroyVertexBuffers");
 	}
 
-	private int vertexArrayObject;
+	private int vertexArrayObject1;
+	private int vertexArrayObject2;
 
-	private void createVertexArray()
+	private void createVertexArrays()
 	{
-		vertexArrayObject = GL30.glGenVertexArrays();
-		GL30.glBindVertexArray(vertexArrayObject);
+		int stride = 7 * 4;
+		int nrOfVertices = 18;
+
+		// object 1
+		vertexArrayObject1 = GL30.glGenVertexArrays();
+		GL30.glBindVertexArray(vertexArrayObject1);
 
 		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vertexBufferObject);
 
 		GL20.glEnableVertexAttribArray(attrib_position);
-		GL20.glVertexAttribPointer(attrib_position, 4, GL11.GL_FLOAT, false, 32, 0);
+		GL20.glVertexAttribPointer(attrib_position, 3, GL11.GL_FLOAT, false, stride, 0);
 		GL20.glEnableVertexAttribArray(attrib_color);
-		GL20.glVertexAttribPointer(attrib_color, 4, GL11.GL_FLOAT, false, 32, 16);
+		GL20.glVertexAttribPointer(attrib_color, 4, GL11.GL_FLOAT, false, stride, 3 * 4);
+
+		GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, elementBufferObject);
 
 		GL30.glBindVertexArray(0);
 
-		exitOnGLError("createVertexArray");
+		// object 2
+		vertexArrayObject2 = GL30.glGenVertexArrays();
+		GL30.glBindVertexArray(vertexArrayObject2);
+
+		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vertexBufferObject);
+
+		GL20.glEnableVertexAttribArray(attrib_position);
+		GL20.glVertexAttribPointer(attrib_position, 3, GL11.GL_FLOAT, false, stride, nrOfVertices * stride);
+		GL20.glEnableVertexAttribArray(attrib_color);
+		GL20.glVertexAttribPointer(attrib_color, 4, GL11.GL_FLOAT, false, stride, nrOfVertices * stride + 3 * 4);
+
+		GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, elementBufferObject);
+
+		GL30.glBindVertexArray(0);
+
+		exitOnGLError("createVertexArrays");
 	}
 
-	private void destroyVertexArray()
+	private void destroyVertexArrays()
 	{
-		GL30.glDeleteVertexArrays(vertexArrayObject);
-		vertexArrayObject = 0;
+		GL30.glDeleteVertexArrays(vertexArrayObject1);
+		vertexArrayObject1 = 0;
 
-		exitOnGLError("destroyVertexArray");
+		GL30.glDeleteVertexArrays(vertexArrayObject2);
+		vertexArrayObject2 = 0;
+
+		exitOnGLError("destroyVertexArrays");
 	}
 
 	private int programId;
@@ -326,10 +360,14 @@ public class Window
 
 		GL20.glUseProgram(programId);
 
-		GL20.glUniform3f(uniform_offset, offsetX, offsetY, 0.0f);
+		GL30.glBindVertexArray(vertexArrayObject1);
+		GL20.glUniform3f(uniform_offset, 0.0f, 0.0f, 0.0f);
+		GL11.glDrawElements(GL11.GL_TRIANGLES, indexData.length, GL11.GL_UNSIGNED_BYTE, 0);
 
-		GL30.glBindVertexArray(vertexArrayObject);
-		GL11.glDrawArrays(GL11.GL_TRIANGLES, 0, 36);
+		GL30.glBindVertexArray(vertexArrayObject2);
+		GL20.glUniform3f(uniform_offset, 0.0f, 0.0f, -1.0f);
+		GL11.glDrawElements(GL11.GL_TRIANGLES, indexData.length, GL11.GL_UNSIGNED_BYTE, 0);
+
 		GL30.glBindVertexArray(0);
 
 		GL20.glUseProgram(0);
