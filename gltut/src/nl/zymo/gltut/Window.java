@@ -207,7 +207,7 @@ public class Window
 		GL20.glDetachShader(programId, vertexShaderId);
 		GL20.glDetachShader(programId, fragmentShaderId);
 
-		GL20.glDeleteShader(vertexArrayObject);
+		GL20.glDeleteShader(vertexShaderId);
 		GL20.glDeleteShader(fragmentShaderId);
 
 		exitOnGLError("createShaderProgram");
