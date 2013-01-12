@@ -326,7 +326,7 @@ public class Window
 
 		GL20.glUseProgram(programId);
 
-		GL20.glUniform2f(uniform_offset, offsetX, offsetY);
+		GL20.glUniform3f(uniform_offset, offsetX, offsetY, 0.0f);
 
 		GL30.glBindVertexArray(vertexArrayObject);
 		GL11.glDrawArrays(GL11.GL_TRIANGLES, 0, 36);
