@@ -18,6 +18,7 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
+import org.lwjgl.opengl.GL32;
 import org.lwjgl.opengl.PixelFormat;
 import org.lwjgl.util.glu.GLU;
 
@@ -40,7 +41,7 @@ public class Window
 
 		createShaderProgram();
 		createVertexBuffers();
-		createVertexArrays();
+		createVertexArray();
 
 		initializeShaderProgram();
 
@@ -56,7 +57,7 @@ public class Window
 			Display.update();
 		}
 
-		destroyVertexArrays();
+		destroyVertexArray();
 		destroyVertexBuffers();
 		destroyShaderProgram();
 
@@ -196,20 +197,16 @@ public class Window
 		exitOnGLError("destroyVertexBuffers");
 	}
 
-	private int vertexArrayObject1;
-	private int vertexArrayObject2;
+	private int vertexArrayObject;
 
-	private void createVertexArrays()
+	private void createVertexArray()
 	{
-		int stride = 7 * 4;
-		int nrOfVertices = 18;
-
-		// object 1
-		vertexArrayObject1 = GL30.glGenVertexArrays();
-		GL30.glBindVertexArray(vertexArrayObject1);
+		vertexArrayObject = GL30.glGenVertexArrays();
+		GL30.glBindVertexArray(vertexArrayObject);
 
 		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vertexBufferObject);
 
+		int stride = 7 * 4;
 		GL20.glEnableVertexAttribArray(attrib_position);
 		GL20.glVertexAttribPointer(attrib_position, 3, GL11.GL_FLOAT, false, stride, 0);
 		GL20.glEnableVertexAttribArray(attrib_color);
@@ -219,33 +216,15 @@ public class Window
 
 		GL30.glBindVertexArray(0);
 
-		// object 2
-		vertexArrayObject2 = GL30.glGenVertexArrays();
-		GL30.glBindVertexArray(vertexArrayObject2);
-
-		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vertexBufferObject);
-
-		GL20.glEnableVertexAttribArray(attrib_position);
-		GL20.glVertexAttribPointer(attrib_position, 3, GL11.GL_FLOAT, false, stride, nrOfVertices * stride);
-		GL20.glEnableVertexAttribArray(attrib_color);
-		GL20.glVertexAttribPointer(attrib_color, 4, GL11.GL_FLOAT, false, stride, nrOfVertices * stride + 3 * 4);
-
-		GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, elementBufferObject);
-
-		GL30.glBindVertexArray(0);
-
-		exitOnGLError("createVertexArrays");
+		exitOnGLError("createVertexArray");
 	}
 
-	private void destroyVertexArrays()
+	private void destroyVertexArray()
 	{
-		GL30.glDeleteVertexArrays(vertexArrayObject1);
-		vertexArrayObject1 = 0;
+		GL30.glDeleteVertexArrays(vertexArrayObject);
+		vertexArrayObject = 0;
 
-		GL30.glDeleteVertexArrays(vertexArrayObject2);
-		vertexArrayObject2 = 0;
-
-		exitOnGLError("destroyVertexArrays");
+		exitOnGLError("destroyVertexArray");
 	}
 
 	private int programId;
@@ -353,13 +332,13 @@ public class Window
 
 		GL20.glUseProgram(programId);
 
-		GL30.glBindVertexArray(vertexArrayObject1);
+		GL30.glBindVertexArray(vertexArrayObject);
+
 		GL20.glUniform3f(uniform_offset, 0.0f, 0.0f, 0.0f);
 		GL11.glDrawElements(GL11.GL_TRIANGLES, indexData.length, GL11.GL_UNSIGNED_BYTE, 0);
 
-		GL30.glBindVertexArray(vertexArrayObject2);
 		GL20.glUniform3f(uniform_offset, 0.0f, 0.0f, -1.0f);
-		GL11.glDrawElements(GL11.GL_TRIANGLES, indexData.length, GL11.GL_UNSIGNED_BYTE, 0);
+		GL32.glDrawElementsBaseVertex(GL11.GL_TRIANGLES, indexData.length, GL11.GL_UNSIGNED_BYTE, 0, 18);
 
 		GL30.glBindVertexArray(0);
 
