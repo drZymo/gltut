@@ -239,7 +239,7 @@ public class Window
 	private int attrib_color;
 
 	private int uniform_offset;
-	private int uniform_perspectiveMatrix;
+	private int uniform_cameraToClipMatrix;
 
 	private void createShaderProgram()
 	{
@@ -258,7 +258,7 @@ public class Window
 		attrib_color = GL20.glGetAttribLocation(programId, "color");
 
 		uniform_offset = GL20.glGetUniformLocation(programId, "offset");
-		uniform_perspectiveMatrix = GL20.glGetUniformLocation(programId, "perspectiveMatrix");
+		uniform_cameraToClipMatrix = GL20.glGetUniformLocation(programId, "cameraToClipMatrix");
 
 		GL20.glDetachShader(programId, vertexShaderId);
 		GL20.glDetachShader(programId, fragmentShaderId);
@@ -278,7 +278,7 @@ public class Window
 		attrib_color = 0;
 
 		uniform_offset = 0;
-		uniform_perspectiveMatrix = 0;
+		uniform_cameraToClipMatrix = 0;
 
 		exitOnGLError("destroyShaderProgram");
 	}
@@ -291,22 +291,22 @@ public class Window
 
 		float frustumScale = (float)(1.0 / Math.tan(fov * Math.PI / 360.0));
 
-		Matrix4f perspectiveMatrix = new Matrix4f();
-		perspectiveMatrix.setZero();
-		perspectiveMatrix.m00 = (frustumScale * height) / width; // NOTE!: Redo this when window is resized
-		perspectiveMatrix.m11 = frustumScale;
-		perspectiveMatrix.m30 = ex;
-		perspectiveMatrix.m31 = ey;
-		perspectiveMatrix.m22 = (zFar + zNear) / (zNear - zFar);
-		perspectiveMatrix.m32 = (2 * zFar * zNear) / (zNear - zFar);
-		perspectiveMatrix.m23 = -ez;
+		Matrix4f cameraToClipMatrix = new Matrix4f();
+		cameraToClipMatrix.setZero();
+		cameraToClipMatrix.m00 = (frustumScale * height) / width; // NOTE!: Redo this when window is resized
+		cameraToClipMatrix.m11 = frustumScale;
+		cameraToClipMatrix.m30 = ex;
+		cameraToClipMatrix.m31 = ey;
+		cameraToClipMatrix.m22 = (zFar + zNear) / (zNear - zFar);
+		cameraToClipMatrix.m32 = (2 * zFar * zNear) / (zNear - zFar);
+		cameraToClipMatrix.m23 = -ez;
 
-		FloatBuffer perspectiveMatrixBuffer = BufferUtils.createFloatBuffer(16);
-		perspectiveMatrix.store(perspectiveMatrixBuffer);
-		perspectiveMatrixBuffer.flip();
+		FloatBuffer cameraToClipMatrixBuffer = BufferUtils.createFloatBuffer(16);
+		cameraToClipMatrix.store(cameraToClipMatrixBuffer);
+		cameraToClipMatrixBuffer.flip();
 
 		GL20.glUseProgram(programId);
-		GL20.glUniformMatrix4(uniform_perspectiveMatrix, false, perspectiveMatrixBuffer);
+		GL20.glUniformMatrix4(uniform_cameraToClipMatrix, false, cameraToClipMatrixBuffer);
 		GL20.glUseProgram(0);
 	}
 
