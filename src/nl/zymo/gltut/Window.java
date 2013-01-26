@@ -237,7 +237,7 @@ public class Window
 	private int attrib_position;
 	private int attrib_color;
 
-	private int uniform_offset;
+	private int uniform_modelToCameraMatrix;
 	private int uniform_cameraToClipMatrix;
 
 	private void createShaderProgram()
@@ -256,7 +256,7 @@ public class Window
 		attrib_position = GL20.glGetAttribLocation(programId, "position");
 		attrib_color = GL20.glGetAttribLocation(programId, "color");
 
-		uniform_offset = GL20.glGetUniformLocation(programId, "offset");
+		uniform_modelToCameraMatrix = GL20.glGetUniformLocation(programId, "modelToCameraMatrix");
 		uniform_cameraToClipMatrix = GL20.glGetUniformLocation(programId, "cameraToClipMatrix");
 
 		GL20.glDetachShader(programId, vertexShaderId);
@@ -276,7 +276,7 @@ public class Window
 		attrib_position = 0;
 		attrib_color = 0;
 
-		uniform_offset = 0;
+		uniform_modelToCameraMatrix = 0;
 		uniform_cameraToClipMatrix = 0;
 
 		exitOnGLError("destroyShaderProgram");
@@ -324,13 +324,15 @@ public class Window
 		return shaderId;
 	}
 
-	private float offsetZ = -1.0f;
+	private Matrix4 object1Transform = new Matrix4(true);
+	private Matrix4 object2Transform = new Matrix4(true);
 
 	private void logic()
 	{
 		double time = getTime();
 		double theta = (time / 5.0) * 2 * Math.PI;
-		offsetZ = (float)Math.sin(theta) * 0.75f + 0.25f;
+		float offsetZ = (float)Math.sin(theta) * 0.75f + 0.25f;
+		object2Transform.put(3, 2, -offsetZ);
 	}
 
 	private void render()
@@ -343,10 +345,10 @@ public class Window
 
 		GL30.glBindVertexArray(vertexArrayObject);
 
-		GL20.glUniform3f(uniform_offset, 0.0f, 0.0f, 0.0f);
+		GL20.glUniformMatrix4(uniform_modelToCameraMatrix, false, object1Transform.getBuffer());
 		GL11.glDrawElements(GL11.GL_TRIANGLES, indexData.length, GL11.GL_UNSIGNED_BYTE, 0);
 
-		GL20.glUniform3f(uniform_offset, 0.0f, 0.0f, -offsetZ);
+		GL20.glUniformMatrix4(uniform_modelToCameraMatrix, false, object2Transform.getBuffer());
 		GL32.glDrawElementsBaseVertex(GL11.GL_TRIANGLES, indexData.length, GL11.GL_UNSIGNED_BYTE, 0, 18);
 
 		GL30.glBindVertexArray(0);

@@ -10,7 +10,19 @@ public class Matrix4
 
 	public Matrix4()
 	{
+		this(false);
+	}
+
+	public Matrix4(Boolean identity)
+	{
 		buffer = BufferUtils.createFloatBuffer(16);
+		if (identity)
+		{
+			put(0, 0, 1f);
+			put(1, 1, 1f);
+			put(2, 2, 1f);
+			put(3, 3, 1f);
+		}
 	}
 
 	public float get(int col, int row)
