@@ -21,7 +21,6 @@ import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL32;
 import org.lwjgl.opengl.PixelFormat;
 import org.lwjgl.util.glu.GLU;
-import org.lwjgl.util.vector.Matrix4f;
 
 public class Window
 {
@@ -291,22 +290,18 @@ public class Window
 
 		float frustumScale = (float)(1.0 / Math.tan(fov * Math.PI / 360.0));
 
-		Matrix4f cameraToClipMatrix = new Matrix4f();
-		cameraToClipMatrix.setZero();
-		cameraToClipMatrix.m00 = (frustumScale * height) / width; // NOTE!: Redo this when window is resized
-		cameraToClipMatrix.m11 = frustumScale;
-		cameraToClipMatrix.m30 = ex;
-		cameraToClipMatrix.m31 = ey;
-		cameraToClipMatrix.m22 = (zFar + zNear) / (zNear - zFar);
-		cameraToClipMatrix.m32 = (2 * zFar * zNear) / (zNear - zFar);
-		cameraToClipMatrix.m23 = -ez;
-
-		FloatBuffer cameraToClipMatrixBuffer = BufferUtils.createFloatBuffer(16);
-		cameraToClipMatrix.store(cameraToClipMatrixBuffer);
-		cameraToClipMatrixBuffer.flip();
+		// NOTE!: Update this matrix when window is resized, because width and height will be different then
+		Matrix4 cameraToClipMatrix = new Matrix4();
+		cameraToClipMatrix.put(0, 0, (frustumScale * height) / width);
+		cameraToClipMatrix.put(1, 1, frustumScale);
+		cameraToClipMatrix.put(3, 0, ex);
+		cameraToClipMatrix.put(3, 1, ey);
+		cameraToClipMatrix.put(2, 2, (zFar + zNear) / (zNear - zFar));
+		cameraToClipMatrix.put(3, 2, (2 * zFar * zNear) / (zNear - zFar));
+		cameraToClipMatrix.put(2, 3, -ez);
 
 		GL20.glUseProgram(programId);
-		GL20.glUniformMatrix4(uniform_cameraToClipMatrix, false, cameraToClipMatrixBuffer);
+		GL20.glUniformMatrix4(uniform_cameraToClipMatrix, false, cameraToClipMatrix.getBuffer());
 		GL20.glUseProgram(0);
 	}
 
