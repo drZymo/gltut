@@ -35,6 +35,20 @@ public class Matrix4
 		buffer.put(col * 4 + row, value);
 	}
 
+	public void setOffset(float x, float y, float z)
+	{
+		put(3, 0, x);
+		put(3, 1, y);
+		put(3, 2, z);
+	}
+
+	public void setScale(float x, float y, float z)
+	{
+		put(0, 0, x);
+		put(1, 1, y);
+		put(2, 2, z);
+	}
+
 	public FloatBuffer getBuffer()
 	{
 		return buffer;

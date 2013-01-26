@@ -284,11 +284,10 @@ public class Window
 
 	private void initializeShaderProgram()
 	{
-		float zNear = 0.5f; float zFar = 3.0f;
+		float zNear = 0.5f; float zFar = 45.0f;
 		float ex = 0f; float ey = 0f; float ez = 1f;
-		float fov = 60.0f;
 
-		float frustumScale = (float)(1.0 / Math.tan(fov * Math.PI / 360.0));
+		float frustumScale = CalculateFrustumScale(60.0f);
 
 		// NOTE!: Update this matrix when window is resized, because width and height will be different then
 		Matrix4 cameraToClipMatrix = new Matrix4();
@@ -303,6 +302,11 @@ public class Window
 		GL20.glUseProgram(programId);
 		GL20.glUniformMatrix4(uniform_cameraToClipMatrix, false, cameraToClipMatrix.getBuffer());
 		GL20.glUseProgram(0);
+	}
+
+	private static float CalculateFrustumScale(float fov)
+	{
+		return (float) (1.0 / Math.tan(fov * Math.PI / 360.0));
 	}
 
 	private int loadShader(String ref, int type)
@@ -332,7 +336,7 @@ public class Window
 		double time = getTime();
 		double theta = (time / 5.0) * 2 * Math.PI;
 		float offsetZ = (float)Math.sin(theta) * 0.75f + 0.25f;
-		object2Transform.put(3, 2, -offsetZ);
+		object2Transform.setOffset(0, 0, -offsetZ);
 	}
 
 	private void render()
