@@ -21,6 +21,7 @@ import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL32;
 import org.lwjgl.opengl.PixelFormat;
 import org.lwjgl.util.glu.GLU;
+import org.lwjgl.util.vector.Matrix4f;
 
 public class Window
 {
@@ -289,17 +290,19 @@ public class Window
 		float fov = 60.0f;
 
 		float frustumScale = (float)(1.0 / Math.tan(fov * Math.PI / 360.0));
-		float[] perspectiveMatrix = new float[16];
-		perspectiveMatrix[0] = (frustumScale * height) / width; // NOTE!: Redo this when window is resized
-		perspectiveMatrix[5] = frustumScale;
-		perspectiveMatrix[12] = ex;
-		perspectiveMatrix[13] = ey;
-		perspectiveMatrix[10] = (zFar + zNear) / (zNear - zFar);
-		perspectiveMatrix[14] = (2 * zFar * zNear) / (zNear - zFar);
-		perspectiveMatrix[11] = -ez;
+
+		Matrix4f perspectiveMatrix = new Matrix4f();
+		perspectiveMatrix.setZero();
+		perspectiveMatrix.m00 = (frustumScale * height) / width; // NOTE!: Redo this when window is resized
+		perspectiveMatrix.m11 = frustumScale;
+		perspectiveMatrix.m30 = ex;
+		perspectiveMatrix.m31 = ey;
+		perspectiveMatrix.m22 = (zFar + zNear) / (zNear - zFar);
+		perspectiveMatrix.m32 = (2 * zFar * zNear) / (zNear - zFar);
+		perspectiveMatrix.m23 = -ez;
 
 		FloatBuffer perspectiveMatrixBuffer = BufferUtils.createFloatBuffer(16);
-		perspectiveMatrixBuffer.put(perspectiveMatrix);
+		perspectiveMatrix.store(perspectiveMatrixBuffer);
 		perspectiveMatrixBuffer.flip();
 
 		GL20.glUseProgram(programId);
