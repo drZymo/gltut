@@ -11,6 +11,7 @@ import java.nio.FloatBuffer;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.LWJGLException;
 import org.lwjgl.Sys;
+import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.ContextAttribs;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
@@ -331,48 +332,41 @@ public class Window
 	private Matrix4 object1Transform = new Matrix4(true);
 	private Matrix4 object2Transform = new Matrix4(true);
 
+	private double camAngle = 0;
+	private double camTilt = 0;
+
 	private void logic()
 	{
+		if (Keyboard.isKeyDown(Keyboard.KEY_LEFT))
+		{
+			camAngle += 0.5;
+		}
+		if (Keyboard.isKeyDown(Keyboard.KEY_RIGHT))
+		{
+			camAngle -= 0.5;
+		}
+		if (Keyboard.isKeyDown(Keyboard.KEY_UP))
+		{
+			camTilt -= 0.5;
+		}
+		if (Keyboard.isKeyDown(Keyboard.KEY_DOWN))
+		{
+			camTilt += 0.5;
+		}
+		camTilt = Math.min(Math.max(camTilt, -90), 90);
+		camAngle = camAngle % 360;
+
 		double time = getTime();
 		double theta = (time / 5.0) * 2 * Math.PI;
 		float offsetZ = (float)Math.sin(theta) * 0.75f + 0.25f;
 		object2Transform.setOffset(0, 0, -offsetZ);
 
-		double camAngle = (time / 10.0) * 360.0;
-		UpdateWorldToCameraMatrix(camAngle);
+		UpdateWorldToCameraMatrix(camAngle, camTilt);
 	}
 
-	private static double ToRadians(double degrees)
+	private void UpdateWorldToCameraMatrix(double angle, double tilt)
 	{
-		return degrees * 2 * Math.PI / 360.0;
-	}
-
-	private static double ToDegrees(double radians)
-	{
-		return radians * 360.0 / (2 * Math.PI);
-	}
-
-	private Vector3f ResolveCameraPosition(double phi, double theta, double radius)
-	{
-		double phiRad = ToRadians(phi);
-		double thetaRad = ToRadians(theta + 90.0);
-
-		double sinPhi = Math.sin(phiRad);
-		double cosPhi = Math.cos(phiRad);
-		double sinTheta = Math.sin(thetaRad);
-		double cosTheta = Math.cos(thetaRad);
-
-		Vector3f dirToCamera = new Vector3f((float)(sinTheta * cosPhi), (float)cosTheta, (float)(sinTheta * sinPhi));
-
-		dirToCamera.scale((float)radius);
-
-		// TODO: dirToCamera.translate(target.x, target.y, target.z);
-		return dirToCamera;
-	}
-
-	private void UpdateWorldToCameraMatrix(double angle)
-	{
-		Vector3f cameraPos = ResolveCameraPosition(angle, 0, 5);
+		Vector3f cameraPos = ResolveCameraPosition(angle, tilt, 5);
 		Vector3f lookAt = new Vector3f(0, 0, 0);
 		Vector3f up = new Vector3f(0, 1, 0);
 
@@ -409,6 +403,24 @@ public class Window
 		transMat.m33 = 1;
 
 		worldToCameraMatrix = Matrix4f.mul(rotMat, transMat, null);
+	}
+
+	private Vector3f ResolveCameraPosition(double phi, double theta, double radius)
+	{
+		double phiRad = ToRadians(phi);
+		double thetaRad = ToRadians(theta + 90.0);
+
+		double sinPhi = Math.sin(phiRad);
+		double cosPhi = Math.cos(phiRad);
+		double sinTheta = Math.sin(thetaRad);
+		double cosTheta = Math.cos(thetaRad);
+
+		Vector3f dirToCamera = new Vector3f((float)(sinTheta * cosPhi), (float)cosTheta, (float)(sinTheta * sinPhi));
+
+		dirToCamera.scale((float)radius);
+
+		// TODO: dirToCamera.translate(target.x, target.y, target.z);
+		return dirToCamera;
 	}
 
 	private Matrix4f worldToCameraMatrix = Matrix4f.setIdentity(new Matrix4f());
@@ -449,6 +461,16 @@ public class Window
 	public double getTime()
 	{
 		return (double)Sys.getTime() / (double)Sys.getTimerResolution();
+	}
+
+	private static double ToRadians(double degrees)
+	{
+		return degrees * 2 * Math.PI / 360.0;
+	}
+
+	private static double ToDegrees(double radians)
+	{
+		return radians * 360.0 / (2 * Math.PI);
 	}
 
 	private String ResourceAsString(String ref)
