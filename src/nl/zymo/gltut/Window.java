@@ -237,7 +237,8 @@ public class Window
 	private int attrib_position;
 	private int attrib_color;
 
-	private int uniform_modelToCameraMatrix;
+	private int uniform_modelToWorldMatrix;
+	private int uniform_worldToCameraMatrix;
 	private int uniform_cameraToClipMatrix;
 
 	private void createShaderProgram()
@@ -256,7 +257,8 @@ public class Window
 		attrib_position = GL20.glGetAttribLocation(programId, "position");
 		attrib_color = GL20.glGetAttribLocation(programId, "color");
 
-		uniform_modelToCameraMatrix = GL20.glGetUniformLocation(programId, "modelToCameraMatrix");
+		uniform_modelToWorldMatrix = GL20.glGetUniformLocation(programId, "modelToWorldMatrix");
+		uniform_worldToCameraMatrix = GL20.glGetUniformLocation(programId, "worldToCameraMatrix");
 		uniform_cameraToClipMatrix = GL20.glGetUniformLocation(programId, "cameraToClipMatrix");
 
 		GL20.glDetachShader(programId, vertexShaderId);
@@ -276,7 +278,8 @@ public class Window
 		attrib_position = 0;
 		attrib_color = 0;
 
-		uniform_modelToCameraMatrix = 0;
+		uniform_modelToWorldMatrix = 0;
+		uniform_worldToCameraMatrix = 0;
 		uniform_cameraToClipMatrix = 0;
 
 		exitOnGLError("destroyShaderProgram");
@@ -299,7 +302,10 @@ public class Window
 		cameraToClipMatrix.put(3, 2, (2 * zFar * zNear) / (zNear - zFar));
 		cameraToClipMatrix.put(2, 3, -ez);
 
+		Matrix4 worldToCameraMatrix = new Matrix4(true);
+
 		GL20.glUseProgram(programId);
+		GL20.glUniformMatrix4(uniform_worldToCameraMatrix, false, worldToCameraMatrix.getBuffer());
 		GL20.glUniformMatrix4(uniform_cameraToClipMatrix, false, cameraToClipMatrix.getBuffer());
 		GL20.glUseProgram(0);
 	}
@@ -349,10 +355,10 @@ public class Window
 
 		GL30.glBindVertexArray(vertexArrayObject);
 
-		GL20.glUniformMatrix4(uniform_modelToCameraMatrix, false, object1Transform.getBuffer());
+		GL20.glUniformMatrix4(uniform_modelToWorldMatrix, false, object1Transform.getBuffer());
 		GL11.glDrawElements(GL11.GL_TRIANGLES, indexData.length, GL11.GL_UNSIGNED_BYTE, 0);
 
-		GL20.glUniformMatrix4(uniform_modelToCameraMatrix, false, object2Transform.getBuffer());
+		GL20.glUniformMatrix4(uniform_modelToWorldMatrix, false, object2Transform.getBuffer());
 		GL32.glDrawElementsBaseVertex(GL11.GL_TRIANGLES, indexData.length, GL11.GL_UNSIGNED_BYTE, 0, 18);
 
 		GL30.glBindVertexArray(0);
