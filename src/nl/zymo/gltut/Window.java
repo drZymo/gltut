@@ -21,6 +21,8 @@ import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL32;
 import org.lwjgl.opengl.PixelFormat;
 import org.lwjgl.util.glu.GLU;
+import org.lwjgl.util.vector.Matrix4f;
+import org.lwjgl.util.vector.Vector3f;
 
 public class Window
 {
@@ -335,9 +337,81 @@ public class Window
 		double theta = (time / 5.0) * 2 * Math.PI;
 		float offsetZ = (float)Math.sin(theta) * 0.75f + 0.25f;
 		object2Transform.setOffset(0, 0, -offsetZ);
+
+		double camAngle = (time / 10.0) * 360.0;
+		UpdateWorldToCameraMatrix(camAngle);
 	}
 
-	private Matrix4 worldToCameraMatrix = new Matrix4(true);
+	private static double ToRadians(double degrees)
+	{
+		return degrees * 2 * Math.PI / 360.0;
+	}
+
+	private static double ToDegrees(double radians)
+	{
+		return radians * 360.0 / (2 * Math.PI);
+	}
+
+	private Vector3f ResolveCameraPosition(double phi, double theta, double radius)
+	{
+		double phiRad = ToRadians(phi);
+		double thetaRad = ToRadians(theta + 90.0);
+
+		double sinPhi = Math.sin(phiRad);
+		double cosPhi = Math.cos(phiRad);
+		double sinTheta = Math.sin(thetaRad);
+		double cosTheta = Math.cos(thetaRad);
+
+		Vector3f dirToCamera = new Vector3f((float)(sinTheta * cosPhi), (float)cosTheta, (float)(sinTheta * sinPhi));
+
+		dirToCamera.scale((float)radius);
+
+		// TODO: dirToCamera.translate(target.x, target.y, target.z);
+		return dirToCamera;
+	}
+
+	private void UpdateWorldToCameraMatrix(double angle)
+	{
+		Vector3f cameraPos = ResolveCameraPosition(angle, 0, 5);
+		Vector3f lookAt = new Vector3f(0, 0, 0);
+		Vector3f up = new Vector3f(0, 1, 0);
+
+		Vector3f lookDir = Vector3f.sub(lookAt, cameraPos, null).normalise(null);
+		Vector3f upDir = up.normalise(null);
+
+		Vector3f rightDir = Vector3f.cross(lookDir, upDir, null).normalise(null);
+		Vector3f perpUpDir = Vector3f.cross(rightDir, lookDir, null);
+
+		Matrix4f rotMat = new Matrix4f();
+		rotMat.m00 = rightDir.x;
+		rotMat.m01 = rightDir.y;
+		rotMat.m02 = rightDir.z;
+		rotMat.m03 = 0;
+		rotMat.m10 = perpUpDir.x;
+		rotMat.m11 = perpUpDir.y;
+		rotMat.m12 = perpUpDir.z;
+		rotMat.m13 = 0;
+		rotMat.m20 = -lookDir.x;
+		rotMat.m21 = -lookDir.y;
+		rotMat.m22 = -lookDir.z;
+		rotMat.m23 = 0;
+		rotMat.m30 = 0;
+		rotMat.m31 = 0;
+		rotMat.m32 = 0;
+		rotMat.m33 = 1;
+
+		rotMat.transpose();
+
+		Matrix4f transMat = Matrix4f.setIdentity(new Matrix4f());
+		transMat.m30 = -cameraPos.x;
+		transMat.m31 = -cameraPos.y;
+		transMat.m32 = -cameraPos.z;
+		transMat.m33 = 1;
+
+		worldToCameraMatrix = Matrix4f.mul(rotMat, transMat, null);
+	}
+
+	private Matrix4f worldToCameraMatrix = Matrix4f.setIdentity(new Matrix4f());
 
 	private void render()
 	{
@@ -349,7 +423,10 @@ public class Window
 
 		GL30.glBindVertexArray(vertexArrayObject);
 
-		GL20.glUniformMatrix4(uniform_worldToCameraMatrix, false, worldToCameraMatrix.getBuffer());
+		FloatBuffer worldToCameraMatrixBuffer = BufferUtils.createFloatBuffer(16);
+		worldToCameraMatrix.store(worldToCameraMatrixBuffer);
+		worldToCameraMatrixBuffer.flip();
+		GL20.glUniformMatrix4(uniform_worldToCameraMatrix, false, worldToCameraMatrixBuffer);
 
 		GL20.glUniformMatrix4(uniform_modelToWorldMatrix, false, object1Transform.getBuffer());
 		GL11.glDrawElements(GL11.GL_TRIANGLES, indexData.length, GL11.GL_UNSIGNED_BYTE, 0);
