@@ -290,10 +290,7 @@ public class Window
 		// NOTE!: Update this matrix when window is resized, because width and height will be different then
 		Matrix4 cameraToClipMatrix = GetPerspectiveMatrix(60.0f, (float)height / (float)width, 0.5f, 45.0f);
 
-		Matrix4 worldToCameraMatrix = new Matrix4(true);
-
 		GL20.glUseProgram(programId);
-		GL20.glUniformMatrix4(uniform_worldToCameraMatrix, false, worldToCameraMatrix.getBuffer());
 		GL20.glUniformMatrix4(uniform_cameraToClipMatrix, false, cameraToClipMatrix.getBuffer());
 		GL20.glUseProgram(0);
 	}
@@ -340,6 +337,8 @@ public class Window
 		object2Transform.setOffset(0, 0, -offsetZ);
 	}
 
+	private Matrix4 worldToCameraMatrix = new Matrix4(true);
+
 	private void render()
 	{
 		GL11.glClearColor(0.0f, 0.0f, 0.0f, 0f);
@@ -349,6 +348,8 @@ public class Window
 		GL20.glUseProgram(programId);
 
 		GL30.glBindVertexArray(vertexArrayObject);
+
+		GL20.glUniformMatrix4(uniform_worldToCameraMatrix, false, worldToCameraMatrix.getBuffer());
 
 		GL20.glUniformMatrix4(uniform_modelToWorldMatrix, false, object1Transform.getBuffer());
 		GL11.glDrawElements(GL11.GL_TRIANGLES, indexData.length, GL11.GL_UNSIGNED_BYTE, 0);
