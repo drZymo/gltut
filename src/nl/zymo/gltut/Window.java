@@ -287,20 +287,8 @@ public class Window
 
 	private void initializeShaderProgram()
 	{
-		float zNear = 0.5f; float zFar = 45.0f;
-		float ex = 0f; float ey = 0f; float ez = 1f;
-
-		float frustumScale = CalculateFrustumScale(60.0f);
-
 		// NOTE!: Update this matrix when window is resized, because width and height will be different then
-		Matrix4 cameraToClipMatrix = new Matrix4();
-		cameraToClipMatrix.put(0, 0, (frustumScale * height) / width);
-		cameraToClipMatrix.put(1, 1, frustumScale);
-		cameraToClipMatrix.put(3, 0, ex);
-		cameraToClipMatrix.put(3, 1, ey);
-		cameraToClipMatrix.put(2, 2, (zFar + zNear) / (zNear - zFar));
-		cameraToClipMatrix.put(3, 2, (2 * zFar * zNear) / (zNear - zFar));
-		cameraToClipMatrix.put(2, 3, -ez);
+		Matrix4 cameraToClipMatrix = GetPerspectiveMatrix(60.0f, (float)height / (float)width, 0.5f, 45.0f);
 
 		Matrix4 worldToCameraMatrix = new Matrix4(true);
 
@@ -310,9 +298,16 @@ public class Window
 		GL20.glUseProgram(0);
 	}
 
-	private static float CalculateFrustumScale(float fov)
+	private static Matrix4 GetPerspectiveMatrix(float fov, float aspectRatio, float zNear, float zFar)
 	{
-		return (float) (1.0 / Math.tan(fov * Math.PI / 360.0));
+		float frustumScale = (float)(1.0 / Math.tan(fov * Math.PI / 360.0));
+		Matrix4 matrix = new Matrix4();
+		matrix.put(0, 0, frustumScale * aspectRatio);
+		matrix.put(1, 1, frustumScale);
+		matrix.put(2, 2, (zFar + zNear) / (zNear - zFar));
+		matrix.put(3, 2, (2 * zFar * zNear) / (zNear - zFar));
+		matrix.put(2, 3, -1);
+		return matrix;
 	}
 
 	private int loadShader(String ref, int type)
