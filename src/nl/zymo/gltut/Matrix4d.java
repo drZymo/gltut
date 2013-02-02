@@ -231,7 +231,54 @@ public class Matrix4d
 		return transpose(this);
 	}
 
+	public String toString()
+	{
+		return "{ " +
+				m11 + ", " + m12 + ", " + m13 + ", " + m14 + ", " +
+				m21 + ", " + m22 + ", " + m23 + ", " + m24 + ", " +
+				m31 + ", " + m32 + ", " + m33 + ", " + m34 + ", " +
+				m41 + ", " + m42 + ", " + m43 + ", " + m44 +
+				" }";
+	}
+
 	public void store(FloatBuffer buffer)
+	{
+		store(buffer, true);
+	}
+
+	public void store(FloatBuffer buffer, Boolean colMajor)
+	{
+		if (colMajor)
+		{
+			storeColumnMajor(buffer);
+		}
+		else
+		{
+			storeRowMajor(buffer);
+		}
+	}
+
+	private void storeColumnMajor(FloatBuffer buffer)
+	{
+		buffer.put(0, (float)m11);
+		buffer.put(1, (float)m21);
+		buffer.put(2, (float)m31);
+		buffer.put(3, (float)m41);
+		buffer.put(4, (float)m12);
+		buffer.put(5, (float)m22);
+		buffer.put(6, (float)m32);
+		buffer.put(7, (float)m42);
+		buffer.put(8, (float)m13);
+		buffer.put(9, (float)m23);
+		buffer.put(10, (float)m33);
+		buffer.put(11, (float)m43);
+		buffer.put(12, (float)m14);
+		buffer.put(13, (float)m24);
+		buffer.put(14, (float)m34);
+		buffer.put(15, (float)m44);
+	}
+
+	private void storeRowMajor(FloatBuffer buffer)
 	{
 		buffer.put(0, (float)m11);
 		buffer.put(1, (float)m12);
