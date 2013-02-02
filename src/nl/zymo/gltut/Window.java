@@ -329,8 +329,8 @@ public class Window
 		return shaderId;
 	}
 
-	private Matrix4 object1Transform = new Matrix4(true);
-	private Matrix4 object2Transform = new Matrix4(true);
+	private Matrix4d object1ToWorldMatrix = Matrix4d.Identity;
+	private Matrix4d object2ToWorldMatrix = Matrix4d.Identity;
 
 	private double camAngle = 0;
 	private double camTilt = 0;
@@ -358,8 +358,8 @@ public class Window
 
 		double time = getTime();
 		double theta = (time / 5.0) * 2 * Math.PI;
-		float offsetZ = (float)Math.sin(theta) * 0.75f + 0.25f;
-		object2Transform.setOffset(0, 0, -offsetZ);
+		double offsetZ = Math.sin(theta) * 0.75 + 0.25;
+		object2ToWorldMatrix = Matrix4d.TranslationMatrix(0, 0, -offsetZ);
 
 		UpdateWorldToCameraMatrix(camAngle, camTilt);
 	}
@@ -420,10 +420,12 @@ public class Window
 		worldToCameraMatrix.store(tempMatrix4fBuffer);
 		GL20.glUniformMatrix4(uniform_worldToCameraMatrix, false, tempMatrix4fBuffer);
 
-		GL20.glUniformMatrix4(uniform_modelToWorldMatrix, false, object1Transform.getBuffer());
-		GL11.glDrawElements(GL11.GL_TRIANGLES, indexData.length, GL11.GL_UNSIGNED_BYTE, 0);
+		object1ToWorldMatrix.store(tempMatrix4fBuffer);
+		GL20.glUniformMatrix4(uniform_modelToWorldMatrix, false, tempMatrix4fBuffer);
+		GL32.glDrawElementsBaseVertex(GL11.GL_TRIANGLES, indexData.length, GL11.GL_UNSIGNED_BYTE, 0, 0);
 
-		GL20.glUniformMatrix4(uniform_modelToWorldMatrix, false, object2Transform.getBuffer());
+		object2ToWorldMatrix.store(tempMatrix4fBuffer);
+		GL20.glUniformMatrix4(uniform_modelToWorldMatrix, false, tempMatrix4fBuffer);
 		GL32.glDrawElementsBaseVertex(GL11.GL_TRIANGLES, indexData.length, GL11.GL_UNSIGNED_BYTE, 0, 18);
 
 		GL30.glBindVertexArray(0);
