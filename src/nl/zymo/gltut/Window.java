@@ -365,10 +365,10 @@ public class Window
 		Vector3d lookAt = new Vector3d(0, 0, 0);
 		Vector3d up = new Vector3d(0, 1, 0);
 
-		Vector3d lookDir = lookAt.sub(cameraPos).norm();
-		Vector3d upDir = up.norm();
+		Vector3d lookDir = lookAt.sub(cameraPos).normalize();
+		Vector3d upDir = up.normalize();
 
-		Vector3d rightDir = Vector3d.cross(lookDir, upDir).norm();
+		Vector3d rightDir = Vector3d.cross(lookDir, upDir).normalize();
 		Vector3d perpUpDir = rightDir.cross(lookDir);
 
 		Matrix4d rotMat = new Matrix4d(

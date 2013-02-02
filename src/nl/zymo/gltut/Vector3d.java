@@ -18,7 +18,7 @@ public class Vector3d
 		return Math.sqrt(x * x + y * y + z * z);
 	}
 
-	public Vector3d norm()
+	public Vector3d normalize()
 	{
 		double length = getLength();
 		return new Vector3d(x / length, y / length, z / length);
