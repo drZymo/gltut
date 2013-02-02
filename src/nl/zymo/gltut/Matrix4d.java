@@ -182,15 +182,6 @@ public class Matrix4d
 				left.m41 * right.m14 + left.m42 * right.m24 + left.m43 * right.m34 + left.m44 * right.m44);
 	}
 
-	public static Matrix4d transpose(Matrix4d matrix)
-	{
-		return new Matrix4d(
-				matrix.m11, matrix.m21, matrix.m31, matrix.m41,
-				matrix.m12, matrix.m22, matrix.m32, matrix.m42,
-				matrix.m13, matrix.m23, matrix.m33, matrix.m43,
-				matrix.m14, matrix.m24, matrix.m34, matrix.m44);
-	}
-
 	public Matrix4d add(double right)
 	{
 		return add(this, right);
@@ -228,7 +219,11 @@ public class Matrix4d
 
 	public Matrix4d transpose()
 	{
-		return transpose(this);
+		return new Matrix4d(
+				m11, m21, m31, m41,
+				m12, m22, m32, m42,
+				m13, m23, m33, m43,
+				m14, m24, m34, m44);
 	}
 
 	public String toString()
