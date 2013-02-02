@@ -286,10 +286,11 @@ public class Window
 	private void initializeShaderProgram()
 	{
 		// NOTE!: Update this matrix when window is resized, because width and height will be different then
-		cameraToClipMatrix = GetPerspectiveMatrix(60.0f, (float)height / (float)width, 0.5f, 45.0f);
+		cameraToClipMatrix = ComputePerspectiveMatrix(60.0f, (float)height / (float)width, 0.5f, 45.0f);
+		worldToCameraMatrix = ComputeWorldToCameraMatrix(camAngle, camTilt);
 	}
 
-	private static Matrix4d GetPerspectiveMatrix(float fov, float aspectRatio, float zNear, float zFar)
+	private static Matrix4d ComputePerspectiveMatrix(float fov, float aspectRatio, float zNear, float zFar)
 	{
 		float frustumScale = (float)(1.0 / Math.tan(fov * Math.PI / 360.0));
 		return new Matrix4d(
@@ -326,6 +327,8 @@ public class Window
 
 	private void logic()
 	{
+		double prevCamAngle = camAngle;
+		double prevCamTilt = camTilt;
 		if (Keyboard.isKeyDown(Keyboard.KEY_LEFT))
 		{
 			camAngle += 0.5;
@@ -344,16 +347,18 @@ public class Window
 		}
 		camTilt = Math.min(Math.max(camTilt, -90), 90);
 		camAngle = camAngle % 360;
+		if ((camAngle != prevCamAngle) || (camTilt != prevCamTilt))
+		{
+			worldToCameraMatrix = ComputeWorldToCameraMatrix(camAngle, camTilt);
+		}
 
 		double time = getTime();
 		double theta = (time / 5.0) * 2 * Math.PI;
 		double offsetZ = Math.sin(theta) * 0.75 + 0.25;
 		object2ToWorldMatrix = Matrix4d.TranslationMatrix(0, 0, -offsetZ);
-
-		UpdateWorldToCameraMatrix(camAngle, camTilt);
 	}
 
-	private void UpdateWorldToCameraMatrix(double angle, double tilt)
+	private static Matrix4d ComputeWorldToCameraMatrix(double angle, double tilt)
 	{
 		Vector3f cameraPos = ResolveCameraPosition(angle, tilt, 5);
 		Vector3f lookAt = new Vector3f(0, 0, 0);
@@ -373,10 +378,10 @@ public class Window
 
 		Matrix4d transMat = Matrix4d.TranslationMatrix(-cameraPos.x, -cameraPos.y, -cameraPos.z);
 
-		worldToCameraMatrix = rotMat.mul(transMat);
+		return rotMat.mul(transMat);
 	}
 
-	private Vector3f ResolveCameraPosition(double phi, double theta, double radius)
+	private static Vector3f ResolveCameraPosition(double phi, double theta, double radius)
 	{
 		double phiRad = ToRadians(phi);
 		double thetaRad = ToRadians(theta + 90.0);
