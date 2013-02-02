@@ -239,9 +239,7 @@ public class Window
 	private int attrib_position;
 	private int attrib_color;
 
-	private int uniform_modelToWorldMatrix;
-	private int uniform_worldToCameraMatrix;
-	private int uniform_cameraToClipMatrix;
+	private int uniform_modelToClipMatrix;
 
 	private void createShaderProgram()
 	{
@@ -259,9 +257,7 @@ public class Window
 		attrib_position = GL20.glGetAttribLocation(programId, "position");
 		attrib_color = GL20.glGetAttribLocation(programId, "color");
 
-		uniform_modelToWorldMatrix = GL20.glGetUniformLocation(programId, "modelToWorldMatrix");
-		uniform_worldToCameraMatrix = GL20.glGetUniformLocation(programId, "worldToCameraMatrix");
-		uniform_cameraToClipMatrix = GL20.glGetUniformLocation(programId, "cameraToClipMatrix");
+		uniform_modelToClipMatrix = GL20.glGetUniformLocation(programId, "modelToClipMatrix");
 
 		GL20.glDetachShader(programId, vertexShaderId);
 		GL20.glDetachShader(programId, fragmentShaderId);
@@ -280,24 +276,17 @@ public class Window
 		attrib_position = 0;
 		attrib_color = 0;
 
-		uniform_modelToWorldMatrix = 0;
-		uniform_worldToCameraMatrix = 0;
-		uniform_cameraToClipMatrix = 0;
+		uniform_modelToClipMatrix = 0;
 
 		exitOnGLError("destroyShaderProgram");
 	}
 
-	private FloatBuffer tempMatrix4fBuffer = BufferUtils.createFloatBuffer(16);
+	private Matrix4d cameraToClipMatrix = Matrix4d.Identity;
 
 	private void initializeShaderProgram()
 	{
 		// NOTE!: Update this matrix when window is resized, because width and height will be different then
-		Matrix4d cameraToClipMatrix = GetPerspectiveMatrix(60.0f, (float)height / (float)width, 0.5f, 45.0f);
-
-		GL20.glUseProgram(programId);
-		cameraToClipMatrix.store(tempMatrix4fBuffer);
-		GL20.glUniformMatrix4(uniform_cameraToClipMatrix, false, tempMatrix4fBuffer);
-		GL20.glUseProgram(0);
+		cameraToClipMatrix = GetPerspectiveMatrix(60.0f, (float)height / (float)width, 0.5f, 45.0f);
 	}
 
 	private static Matrix4d GetPerspectiveMatrix(float fov, float aspectRatio, float zNear, float zFar)
@@ -417,15 +406,14 @@ public class Window
 
 		GL30.glBindVertexArray(vertexArrayObject);
 
-		worldToCameraMatrix.store(tempMatrix4fBuffer);
-		GL20.glUniformMatrix4(uniform_worldToCameraMatrix, false, tempMatrix4fBuffer);
+		FloatBuffer tempMatrix4fBuffer = BufferUtils.createFloatBuffer(16);
 
-		object1ToWorldMatrix.store(tempMatrix4fBuffer);
-		GL20.glUniformMatrix4(uniform_modelToWorldMatrix, false, tempMatrix4fBuffer);
+		cameraToClipMatrix.mul(worldToCameraMatrix).mul(object1ToWorldMatrix).store(tempMatrix4fBuffer);
+		GL20.glUniformMatrix4(uniform_modelToClipMatrix, false, tempMatrix4fBuffer);
 		GL32.glDrawElementsBaseVertex(GL11.GL_TRIANGLES, indexData.length, GL11.GL_UNSIGNED_BYTE, 0, 0);
 
-		object2ToWorldMatrix.store(tempMatrix4fBuffer);
-		GL20.glUniformMatrix4(uniform_modelToWorldMatrix, false, tempMatrix4fBuffer);
+		cameraToClipMatrix.mul(worldToCameraMatrix).mul(object2ToWorldMatrix).store(tempMatrix4fBuffer);
+		GL20.glUniformMatrix4(uniform_modelToClipMatrix, false, tempMatrix4fBuffer);
 		GL32.glDrawElementsBaseVertex(GL11.GL_TRIANGLES, indexData.length, GL11.GL_UNSIGNED_BYTE, 0, 18);
 
 		GL30.glBindVertexArray(0);
