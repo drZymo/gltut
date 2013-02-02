@@ -22,7 +22,6 @@ import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL32;
 import org.lwjgl.opengl.PixelFormat;
 import org.lwjgl.util.glu.GLU;
-import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector3f;
 
 public class Window
@@ -377,33 +376,15 @@ public class Window
 		Vector3f rightDir = Vector3f.cross(lookDir, upDir, null).normalise(null);
 		Vector3f perpUpDir = Vector3f.cross(rightDir, lookDir, null);
 
-		Matrix4f rotMat = new Matrix4f();
-		rotMat.m00 = rightDir.x;
-		rotMat.m01 = rightDir.y;
-		rotMat.m02 = rightDir.z;
-		rotMat.m03 = 0;
-		rotMat.m10 = perpUpDir.x;
-		rotMat.m11 = perpUpDir.y;
-		rotMat.m12 = perpUpDir.z;
-		rotMat.m13 = 0;
-		rotMat.m20 = -lookDir.x;
-		rotMat.m21 = -lookDir.y;
-		rotMat.m22 = -lookDir.z;
-		rotMat.m23 = 0;
-		rotMat.m30 = 0;
-		rotMat.m31 = 0;
-		rotMat.m32 = 0;
-		rotMat.m33 = 1;
+		Matrix4d rotMat = new Matrix4d(
+				rightDir.x, rightDir.y,  rightDir.z, 0,
+				perpUpDir.x, perpUpDir.y, perpUpDir.z, 0,
+				-lookDir.x, -lookDir.y, -lookDir.z, 0,
+				0, 0, 0, 1);
 
-		rotMat.transpose();
+		Matrix4d transMat = Matrix4d.TranslationMatrix(-cameraPos.x, -cameraPos.y, -cameraPos.z);
 
-		Matrix4f transMat = Matrix4f.setIdentity(new Matrix4f());
-		transMat.m30 = -cameraPos.x;
-		transMat.m31 = -cameraPos.y;
-		transMat.m32 = -cameraPos.z;
-		transMat.m33 = 1;
-
-		worldToCameraMatrix = Matrix4f.mul(rotMat, transMat, null);
+		worldToCameraMatrix = rotMat.mul(transMat);
 	}
 
 	private Vector3f ResolveCameraPosition(double phi, double theta, double radius)
@@ -424,7 +405,7 @@ public class Window
 		return dirToCamera;
 	}
 
-	private Matrix4f worldToCameraMatrix = Matrix4f.setIdentity(new Matrix4f());
+	private Matrix4d worldToCameraMatrix = Matrix4d.Identity;
 
 	private void render()
 	{
@@ -436,10 +417,8 @@ public class Window
 
 		GL30.glBindVertexArray(vertexArrayObject);
 
-		FloatBuffer worldToCameraMatrixBuffer = BufferUtils.createFloatBuffer(16);
-		worldToCameraMatrix.store(worldToCameraMatrixBuffer);
-		worldToCameraMatrixBuffer.flip();
-		GL20.glUniformMatrix4(uniform_worldToCameraMatrix, false, worldToCameraMatrixBuffer);
+		worldToCameraMatrix.store(tempMatrix4fBuffer);
+		GL20.glUniformMatrix4(uniform_worldToCameraMatrix, false, tempMatrix4fBuffer);
 
 		GL20.glUniformMatrix4(uniform_modelToWorldMatrix, false, object1Transform.getBuffer());
 		GL11.glDrawElements(GL11.GL_TRIANGLES, indexData.length, GL11.GL_UNSIGNED_BYTE, 0);
