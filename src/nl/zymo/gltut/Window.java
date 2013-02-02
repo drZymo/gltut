@@ -22,7 +22,6 @@ import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL32;
 import org.lwjgl.opengl.PixelFormat;
 import org.lwjgl.util.glu.GLU;
-import org.lwjgl.util.vector.Vector3f;
 
 public class Window
 {
@@ -362,15 +361,15 @@ public class Window
 
 	private static Matrix4d ComputeWorldToCameraMatrix(double angle, double tilt)
 	{
-		Vector3f cameraPos = ResolveCameraPosition(angle, tilt, 5);
-		Vector3f lookAt = new Vector3f(0, 0, 0);
-		Vector3f up = new Vector3f(0, 1, 0);
+		Vector3d cameraPos = ResolveCameraPosition(angle, tilt, 5);
+		Vector3d lookAt = new Vector3d(0, 0, 0);
+		Vector3d up = new Vector3d(0, 1, 0);
 
-		Vector3f lookDir = Vector3f.sub(lookAt, cameraPos, null).normalise(null);
-		Vector3f upDir = up.normalise(null);
+		Vector3d lookDir = lookAt.sub(cameraPos).norm();
+		Vector3d upDir = up.norm();
 
-		Vector3f rightDir = Vector3f.cross(lookDir, upDir, null).normalise(null);
-		Vector3f perpUpDir = Vector3f.cross(rightDir, lookDir, null);
+		Vector3d rightDir = Vector3d.cross(lookDir, upDir).norm();
+		Vector3d perpUpDir = rightDir.cross(lookDir);
 
 		Matrix4d rotMat = new Matrix4d(
 				rightDir.x, rightDir.y,  rightDir.z, 0,
@@ -383,7 +382,7 @@ public class Window
 		return rotMat.mul(transMat);
 	}
 
-	private static Vector3f ResolveCameraPosition(double phi, double theta, double radius)
+	private static Vector3d ResolveCameraPosition(double phi, double theta, double radius)
 	{
 		double phiRad = ToRadians(phi);
 		double thetaRad = ToRadians(theta + 90.0);
@@ -393,9 +392,9 @@ public class Window
 		double sinTheta = Math.sin(thetaRad);
 		double cosTheta = Math.cos(thetaRad);
 
-		Vector3f dirToCamera = new Vector3f((float)(sinTheta * cosPhi), (float)cosTheta, (float)(sinTheta * sinPhi));
+		Vector3d dirToCamera = new Vector3d((sinTheta * cosPhi), cosTheta, (sinTheta * sinPhi));
 
-		dirToCamera.scale((float)radius);
+		dirToCamera.scale(radius);
 
 		// TODO: dirToCamera.translate(target.x, target.y, target.z);
 		return dirToCamera;
