@@ -394,10 +394,7 @@ public class Window
 
 		Vector3d dirToCamera = new Vector3d((sinTheta * cosPhi), cosTheta, (sinTheta * sinPhi));
 
-		dirToCamera.scale(radius);
-
-		// TODO: dirToCamera.translate(target.x, target.y, target.z);
-		return dirToCamera;
+		return dirToCamera.scale(radius);
 	}
 
 	private Matrix4d worldToCameraMatrix = Matrix4d.Identity;
