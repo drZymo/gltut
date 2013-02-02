@@ -1,5 +1,7 @@
 package nl.zymo.gltut;
 
+import java.nio.FloatBuffer;
+
 public class Matrix4d
 {
 	public Matrix4d(
@@ -180,6 +182,15 @@ public class Matrix4d
 				left.m41 * right.m14 + left.m42 * right.m24 + left.m43 * right.m34 + left.m44 * right.m44);
 	}
 
+	public static Matrix4d transpose(Matrix4d matrix)
+	{
+		return new Matrix4d(
+				matrix.m11, matrix.m21, matrix.m31, matrix.m41,
+				matrix.m12, matrix.m22, matrix.m32, matrix.m42,
+				matrix.m13, matrix.m23, matrix.m33, matrix.m43,
+				matrix.m14, matrix.m24, matrix.m34, matrix.m44);
+	}
+
 	public Matrix4d add(double right)
 	{
 		return add(this, right);
@@ -213,5 +224,30 @@ public class Matrix4d
 	public Matrix4d mul(Matrix4d right)
 	{
 		return mul(this, right);
+	}
+
+	public Matrix4d transpose()
+	{
+		return transpose(this);
+	}
+
+	public void store(FloatBuffer buffer)
+	{
+		buffer.put(0, (float)m11);
+		buffer.put(1, (float)m12);
+		buffer.put(2, (float)m13);
+		buffer.put(3, (float)m14);
+		buffer.put(4, (float)m21);
+		buffer.put(5, (float)m22);
+		buffer.put(6, (float)m23);
+		buffer.put(7, (float)m24);
+		buffer.put(8, (float)m31);
+		buffer.put(9, (float)m32);
+		buffer.put(10, (float)m33);
+		buffer.put(11, (float)m34);
+		buffer.put(12, (float)m41);
+		buffer.put(13, (float)m42);
+		buffer.put(14, (float)m43);
+		buffer.put(15, (float)m44);
 	}
 }

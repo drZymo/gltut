@@ -288,26 +288,27 @@ public class Window
 		exitOnGLError("destroyShaderProgram");
 	}
 
+	private FloatBuffer tempMatrix4fBuffer = BufferUtils.createFloatBuffer(16);
+
 	private void initializeShaderProgram()
 	{
 		// NOTE!: Update this matrix when window is resized, because width and height will be different then
-		Matrix4 cameraToClipMatrix = GetPerspectiveMatrix(60.0f, (float)height / (float)width, 0.5f, 45.0f);
+		Matrix4d cameraToClipMatrix = GetPerspectiveMatrix(60.0f, (float)height / (float)width, 0.5f, 45.0f);
 
 		GL20.glUseProgram(programId);
-		GL20.glUniformMatrix4(uniform_cameraToClipMatrix, false, cameraToClipMatrix.getBuffer());
+		cameraToClipMatrix.store(tempMatrix4fBuffer);
+		GL20.glUniformMatrix4(uniform_cameraToClipMatrix, false, tempMatrix4fBuffer);
 		GL20.glUseProgram(0);
 	}
 
-	private static Matrix4 GetPerspectiveMatrix(float fov, float aspectRatio, float zNear, float zFar)
+	private static Matrix4d GetPerspectiveMatrix(float fov, float aspectRatio, float zNear, float zFar)
 	{
 		float frustumScale = (float)(1.0 / Math.tan(fov * Math.PI / 360.0));
-		Matrix4 matrix = new Matrix4();
-		matrix.put(0, 0, frustumScale * aspectRatio);
-		matrix.put(1, 1, frustumScale);
-		matrix.put(2, 2, (zFar + zNear) / (zNear - zFar));
-		matrix.put(3, 2, (2 * zFar * zNear) / (zNear - zFar));
-		matrix.put(2, 3, -1);
-		return matrix;
+		return new Matrix4d(
+				frustumScale * aspectRatio, 0, 0, 0,
+				0, frustumScale, 0, 0,
+				0, 0, (zFar + zNear) / (zNear - zFar), (2 * zFar * zNear) / (zNear - zFar),
+				0, 0, -1, 0);
 	}
 
 	private int loadShader(String ref, int type)
