@@ -29,6 +29,8 @@ public class Window
 	private int height;
 	private String title;
 
+	private Cube groundPlane;
+
 	public Window(int width, int height, String title)
 	{
 		this.width = width;
@@ -42,7 +44,9 @@ public class Window
 
 		createShaderProgram();
 		createVertexBuffers();
-		createVertexArray();
+
+		groundPlane = new Cube(attrib_position, attrib_color);
+		groundPlaneToWorldMatrix = Matrix4d.ScaleMatrix(5, 0.01, 5);
 
 		initializeShaderProgram();
 
@@ -58,7 +62,8 @@ public class Window
 			Display.update();
 		}
 
-		destroyVertexArray();
+		groundPlane.close();
+
 		destroyVertexBuffers();
 		destroyShaderProgram();
 
@@ -169,11 +174,17 @@ public class Window
 		17, 16, 14,
 	};
 
+
+	private int vertexArrayObject;
 	private int vertexBufferObject;
 	private int elementBufferObject;
 
 	private void createVertexBuffers()
 	{
+		vertexArrayObject = GL30.glGenVertexArrays();
+		GL30.glBindVertexArray(vertexArrayObject);
+
+
 		FloatBuffer vertexBuffer = BufferUtils.createFloatBuffer(vertexData.length);
 		vertexBuffer.put(vertexData);
 		vertexBuffer.flip();
@@ -181,7 +192,13 @@ public class Window
 		vertexBufferObject = GL15.glGenBuffers();
 		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vertexBufferObject);
 		GL15.glBufferData(GL15.GL_ARRAY_BUFFER, vertexBuffer, GL15.GL_STATIC_DRAW);
-		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+
+		int stride = 7 * 4;
+		GL20.glEnableVertexAttribArray(attrib_position);
+		GL20.glVertexAttribPointer(attrib_position, 3, GL11.GL_FLOAT, false, stride, 0);
+		GL20.glEnableVertexAttribArray(attrib_color);
+		GL20.glVertexAttribPointer(attrib_color, 4, GL11.GL_FLOAT, false, stride, 3 * 4);
+
 
 		ByteBuffer elementBuffer = BufferUtils.createByteBuffer(indexData.length);
 		elementBuffer.put(indexData);
@@ -190,48 +207,25 @@ public class Window
 		elementBufferObject = GL15.glGenBuffers();
 		GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, elementBufferObject);
 		GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, elementBuffer, GL15.GL_STATIC_DRAW);
-		GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
+
+		GL30.glBindVertexArray(0);
 
 		exitOnGLError("createVertexBuffers");
 	}
 
 	private void destroyVertexBuffers()
 	{
+		GL15.glDeleteBuffers(elementBufferObject);
+		elementBufferObject = 0;
 		GL15.glDeleteBuffers(vertexBufferObject);
 		vertexBufferObject = 0;
+
+		GL30.glDeleteVertexArrays(vertexArrayObject);
+		vertexArrayObject = 0;
 
 		exitOnGLError("destroyVertexBuffers");
 	}
 
-	private int vertexArrayObject;
-
-	private void createVertexArray()
-	{
-		vertexArrayObject = GL30.glGenVertexArrays();
-		GL30.glBindVertexArray(vertexArrayObject);
-
-		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vertexBufferObject);
-
-		int stride = 7 * 4;
-		GL20.glEnableVertexAttribArray(attrib_position);
-		GL20.glVertexAttribPointer(attrib_position, 3, GL11.GL_FLOAT, false, stride, 0);
-		GL20.glEnableVertexAttribArray(attrib_color);
-		GL20.glVertexAttribPointer(attrib_color, 4, GL11.GL_FLOAT, false, stride, 3 * 4);
-
-		GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, elementBufferObject);
-
-		GL30.glBindVertexArray(0);
-
-		exitOnGLError("createVertexArray");
-	}
-
-	private void destroyVertexArray()
-	{
-		GL30.glDeleteVertexArrays(vertexArrayObject);
-		vertexArrayObject = 0;
-
-		exitOnGLError("destroyVertexArray");
-	}
 
 	private int programId;
 
@@ -297,7 +291,7 @@ public class Window
 		GL20.glUniformMatrix4(uniform_cameraToClipMatrix, false, tempMatrix4fBuffer);
 		GL20.glUseProgram(0);
 
-		worldToCameraMatrix = ComputeWorldToCameraMatrix(camAngle, camTilt);
+		worldToCameraMatrix = ComputeWorldToCameraMatrix(lookAt, camAngle, camTilt);
 	}
 
 	private static Matrix4d ComputePerspectiveMatrix(float fov, float aspectRatio, float zNear, float zFar)
@@ -332,8 +326,9 @@ public class Window
 	private Matrix4d object1ToWorldMatrix = Matrix4d.Identity;
 	private Matrix4d object2ToWorldMatrix = Matrix4d.Identity;
 
+	private Vector3d lookAt = new Vector3d(0, 2, 0);
 	private double camAngle = 0;
-	private double camTilt = 0;
+	private double camTilt = -lookAt.y;
 
 	private void logic()
 	{
@@ -359,7 +354,7 @@ public class Window
 		camAngle = camAngle % 360;
 		if ((camAngle != prevCamAngle) || (camTilt != prevCamTilt))
 		{
-			worldToCameraMatrix = ComputeWorldToCameraMatrix(camAngle, camTilt);
+			worldToCameraMatrix = ComputeWorldToCameraMatrix(lookAt, camAngle, camTilt);
 		}
 
 		double time = getTime();
@@ -368,10 +363,9 @@ public class Window
 		object2ToWorldMatrix = Matrix4d.TranslationMatrix(0, 0, -offsetZ);
 	}
 
-	private static Matrix4d ComputeWorldToCameraMatrix(double angle, double tilt)
+	private static Matrix4d ComputeWorldToCameraMatrix(Vector3d lookAt, double angle, double tilt)
 	{
 		Vector3d cameraPos = ResolveCameraPosition(angle, tilt, 5);
-		Vector3d lookAt = new Vector3d(0, 0, 0);
 		Vector3d up = new Vector3d(0, 1, 0);
 
 		Vector3d lookDir = lookAt.sub(cameraPos).normalize();
@@ -408,6 +402,8 @@ public class Window
 
 	private Matrix4d worldToCameraMatrix = Matrix4d.Identity;
 
+	private Matrix4d groundPlaneToWorldMatrix = Matrix4d.Identity;
+
 	private void render()
 	{
 		GL11.glClearColor(0.0f, 0.0f, 0.0f, 0f);
@@ -429,6 +425,12 @@ public class Window
 		GL32.glDrawElementsBaseVertex(GL11.GL_TRIANGLES, indexData.length, GL11.GL_UNSIGNED_BYTE, 0, 18);
 
 		GL30.glBindVertexArray(0);
+
+
+		worldToCameraMatrix.mul(groundPlaneToWorldMatrix).store(tempMatrix4fBuffer);
+		GL20.glUniformMatrix4(uniform_modelToCameraMatrix, false, tempMatrix4fBuffer);
+		groundPlane.render();
+
 
 		GL20.glUseProgram(0);
 
