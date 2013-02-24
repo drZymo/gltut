@@ -29,7 +29,13 @@ public class Window
 	private int height;
 	private String title;
 
-	private Cube groundPlane;
+	private Cube ground;
+	private Matrix4d groundToWorldMatrix = Matrix4d.Identity;
+
+
+	private Plane plane;
+	private Matrix4d planeToWorldMatrix = Matrix4d.Identity;
+
 
 	public Window(int width, int height, String title)
 	{
@@ -45,8 +51,11 @@ public class Window
 		createShaderProgram();
 		createVertexBuffers();
 
-		groundPlane = new Cube(attrib_position, attrib_color);
-		groundPlaneToWorldMatrix = Matrix4d.ScaleMatrix(5, 0.01, 5);
+		ground = new Cube(attrib_position, attrib_color);
+		groundToWorldMatrix = Matrix4d.ScaleMatrix(5, 0.01, 5);
+
+		plane = new Plane(attrib_position, attrib_color);
+		planeToWorldMatrix = Matrix4d.TranslationMatrix(0, 2, 0);
 
 		initializeShaderProgram();
 
@@ -62,7 +71,8 @@ public class Window
 			Display.update();
 		}
 
-		groundPlane.close();
+		plane.close();
+		ground.close();
 
 		destroyVertexBuffers();
 		destroyShaderProgram();
@@ -402,8 +412,6 @@ public class Window
 
 	private Matrix4d worldToCameraMatrix = Matrix4d.Identity;
 
-	private Matrix4d groundPlaneToWorldMatrix = Matrix4d.Identity;
-
 	private void render()
 	{
 		GL11.glClearColor(0.0f, 0.0f, 0.0f, 0f);
@@ -427,10 +435,13 @@ public class Window
 		GL30.glBindVertexArray(0);
 
 
-		worldToCameraMatrix.mul(groundPlaneToWorldMatrix).store(tempMatrix4fBuffer);
+		worldToCameraMatrix.mul(groundToWorldMatrix).store(tempMatrix4fBuffer);
 		GL20.glUniformMatrix4(uniform_modelToCameraMatrix, false, tempMatrix4fBuffer);
-		groundPlane.render();
+		ground.render();
 
+		worldToCameraMatrix.mul(planeToWorldMatrix).store(tempMatrix4fBuffer);
+		GL20.glUniformMatrix4(uniform_modelToCameraMatrix, false, tempMatrix4fBuffer);
+		plane.render();
 
 		GL20.glUseProgram(0);
 
