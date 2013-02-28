@@ -2,6 +2,9 @@ package nl.zymo.gltut;
 
 import java.nio.FloatBuffer;
 
+/*
+ * 4-dimensional row-major matrix (i.e. field identified by m<row><column>)
+ */
 public class Matrix4
 {
 	public Matrix4(
