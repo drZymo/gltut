@@ -340,6 +340,15 @@ public class Window
 	private double camAngle = 0;
 	private double camTilt = -lookAt.y;
 
+	private double planeRotateX = 0;
+	private double planeRotateY = 0;
+	private double planeRotateZ = 0;
+
+	private static final double TAU = Math.PI * 2;
+
+	private static final double rotateStepBig = TAU / 180;
+	private static final double rotateStepSmall = TAU / 1440;
+
 	private void logic()
 	{
 		double prevCamAngle = camAngle;
@@ -367,8 +376,40 @@ public class Window
 			worldToCameraMatrix = ComputeWorldToCameraMatrix(lookAt, camAngle, camTilt);
 		}
 
+		double rotateStep = Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) ? rotateStepSmall : rotateStepBig;
+
+		if (Keyboard.isKeyDown(Keyboard.KEY_S))
+		{
+			planeRotateX -= rotateStep;
+		}
+		if (Keyboard.isKeyDown(Keyboard.KEY_W))
+		{
+			planeRotateX += rotateStep;
+		}
+		if (Keyboard.isKeyDown(Keyboard.KEY_Q))
+		{
+			planeRotateY -= rotateStep;
+		}
+		if (Keyboard.isKeyDown(Keyboard.KEY_E))
+		{
+			planeRotateY +=rotateStep;
+		}
+		if (Keyboard.isKeyDown(Keyboard.KEY_A))
+		{
+			planeRotateZ -= rotateStep;
+		}
+		if (Keyboard.isKeyDown(Keyboard.KEY_D))
+		{
+			planeRotateZ += rotateStep;
+		}
+
+		planeRotateX = (planeRotateX + TAU) % TAU;
+		planeRotateY = (planeRotateY + TAU) % TAU;
+		planeRotateZ = (planeRotateZ + TAU) % TAU;
+
+
 		double time = getTime();
-		double theta = (time / 5.0) * 2 * Math.PI;
+		double theta = (time / 5.0) * TAU;
 		double offsetZ = Math.sin(theta) * 0.75 + 0.25;
 		object2ToWorldMatrix = Matrix4d.TranslationMatrix(0, 0, -offsetZ);
 	}
@@ -439,7 +480,12 @@ public class Window
 		GL20.glUniformMatrix4(uniform_modelToCameraMatrix, false, tempMatrix4fBuffer);
 		ground.render();
 
-		worldToCameraMatrix.mul(planeToWorldMatrix).store(tempMatrix4fBuffer);
+		Matrix4d planeMatrixRotX = Matrix4d.RotateXMatrix(planeRotateX);
+		Matrix4d planeMatrixRotY = Matrix4d.RotateYMatrix(planeRotateY);
+		Matrix4d planeMatrixRotZ = Matrix4d.RotateZMatrix(planeRotateZ);
+		Matrix4d planeMatrix = planeToWorldMatrix.mul(planeMatrixRotZ).mul(planeMatrixRotY).mul(planeMatrixRotX);
+
+		worldToCameraMatrix.mul(planeMatrix).store(tempMatrix4fBuffer);
 		GL20.glUniformMatrix4(uniform_modelToCameraMatrix, false, tempMatrix4fBuffer);
 		plane.render();
 
@@ -460,12 +506,12 @@ public class Window
 
 	private static double ToRadians(double degrees)
 	{
-		return degrees * 2 * Math.PI / 360.0;
+		return degrees * TAU / 360.0;
 	}
 
 	private static double ToDegrees(double radians)
 	{
-		return radians * 360.0 / (2 * Math.PI);
+		return radians * 360.0 / TAU;
 	}
 
 	private String ResourceAsString(String ref)
