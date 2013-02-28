@@ -30,11 +30,11 @@ public class Window
 	private String title;
 
 	private Cube ground;
-	private Matrix4d groundToWorldMatrix = Matrix4d.Identity;
+	private Matrix4 groundToWorldMatrix = Matrix4.Identity;
 
 
 	private Plane plane;
-	private Matrix4d planeToWorldMatrix = Matrix4d.Identity;
+	private Matrix4 planeToWorldMatrix = Matrix4.Identity;
 
 
 	public Window(int width, int height, String title)
@@ -52,10 +52,10 @@ public class Window
 		createVertexBuffers();
 
 		ground = new Cube(attrib_position, attrib_color);
-		groundToWorldMatrix = Matrix4d.ScaleMatrix(5, 0.01, 5);
+		groundToWorldMatrix = Matrix4.ScaleMatrix(5, 0.01, 5);
 
 		plane = new Plane(attrib_position, attrib_color);
-		planeToWorldMatrix = Matrix4d.TranslationMatrix(0, 2, 0);
+		planeToWorldMatrix = Matrix4.TranslationMatrix(0, 2, 0);
 
 		initializeShaderProgram();
 
@@ -287,7 +287,7 @@ public class Window
 		exitOnGLError("destroyShaderProgram");
 	}
 
-	private Matrix4d cameraToClipMatrix = Matrix4d.Identity;
+	private Matrix4 cameraToClipMatrix = Matrix4.Identity;
 
 	private void initializeShaderProgram()
 	{
@@ -304,10 +304,10 @@ public class Window
 		worldToCameraMatrix = ComputeWorldToCameraMatrix(lookAt, camAngle, camTilt);
 	}
 
-	private static Matrix4d ComputePerspectiveMatrix(float fov, float aspectRatio, float zNear, float zFar)
+	private static Matrix4 ComputePerspectiveMatrix(float fov, float aspectRatio, float zNear, float zFar)
 	{
 		float frustumScale = (float)(1.0 / Math.tan(fov * Math.PI / 360.0));
-		return new Matrix4d(
+		return new Matrix4(
 				frustumScale * aspectRatio, 0, 0, 0,
 				0, frustumScale, 0, 0,
 				0, 0, (zFar + zNear) / (zNear - zFar), (2 * zFar * zNear) / (zNear - zFar),
@@ -333,10 +333,10 @@ public class Window
 		return shaderId;
 	}
 
-	private Matrix4d object1ToWorldMatrix = Matrix4d.Identity;
-	private Matrix4d object2ToWorldMatrix = Matrix4d.Identity;
+	private Matrix4 object1ToWorldMatrix = Matrix4.Identity;
+	private Matrix4 object2ToWorldMatrix = Matrix4.Identity;
 
-	private Vector3d lookAt = new Vector3d(0, 2, 0);
+	private Vector3 lookAt = new Vector3(0, 2, 0);
 	private double camAngle = 0;
 	private double camTilt = -lookAt.y;
 
@@ -411,32 +411,32 @@ public class Window
 		double time = getTime();
 		double theta = (time / 5.0) * TAU;
 		double offsetZ = Math.sin(theta) * 0.75 + 0.25;
-		object2ToWorldMatrix = Matrix4d.TranslationMatrix(0, 0, -offsetZ);
+		object2ToWorldMatrix = Matrix4.TranslationMatrix(0, 0, -offsetZ);
 	}
 
-	private static Matrix4d ComputeWorldToCameraMatrix(Vector3d lookAt, double angle, double tilt)
+	private static Matrix4 ComputeWorldToCameraMatrix(Vector3 lookAt, double angle, double tilt)
 	{
-		Vector3d cameraPos = ResolveCameraPosition(angle, tilt, 5);
-		Vector3d up = new Vector3d(0, 1, 0);
+		Vector3 cameraPos = ResolveCameraPosition(angle, tilt, 5);
+		Vector3 up = new Vector3(0, 1, 0);
 
-		Vector3d lookDir = lookAt.sub(cameraPos).normalize();
-		Vector3d upDir = up.normalize();
+		Vector3 lookDir = lookAt.sub(cameraPos).normalize();
+		Vector3 upDir = up.normalize();
 
-		Vector3d rightDir = Vector3d.cross(lookDir, upDir).normalize();
-		Vector3d perpUpDir = rightDir.cross(lookDir);
+		Vector3 rightDir = Vector3.cross(lookDir, upDir).normalize();
+		Vector3 perpUpDir = rightDir.cross(lookDir);
 
-		Matrix4d rotMat = new Matrix4d(
+		Matrix4 rotMat = new Matrix4(
 				rightDir.x, rightDir.y,  rightDir.z, 0,
 				perpUpDir.x, perpUpDir.y, perpUpDir.z, 0,
 				-lookDir.x, -lookDir.y, -lookDir.z, 0,
 				0, 0, 0, 1);
 
-		Matrix4d transMat = Matrix4d.TranslationMatrix(-cameraPos.x, -cameraPos.y, -cameraPos.z);
+		Matrix4 transMat = Matrix4.TranslationMatrix(-cameraPos.x, -cameraPos.y, -cameraPos.z);
 
 		return rotMat.mul(transMat);
 	}
 
-	private static Vector3d ResolveCameraPosition(double phi, double theta, double radius)
+	private static Vector3 ResolveCameraPosition(double phi, double theta, double radius)
 	{
 		double phiRad = ToRadians(phi);
 		double thetaRad = ToRadians(theta + 90.0);
@@ -446,12 +446,12 @@ public class Window
 		double sinTheta = Math.sin(thetaRad);
 		double cosTheta = Math.cos(thetaRad);
 
-		Vector3d dirToCamera = new Vector3d((sinTheta * cosPhi), cosTheta, (sinTheta * sinPhi));
+		Vector3 dirToCamera = new Vector3((sinTheta * cosPhi), cosTheta, (sinTheta * sinPhi));
 
 		return dirToCamera.scale(radius);
 	}
 
-	private Matrix4d worldToCameraMatrix = Matrix4d.Identity;
+	private Matrix4 worldToCameraMatrix = Matrix4.Identity;
 
 	private void render()
 	{
@@ -480,10 +480,10 @@ public class Window
 		GL20.glUniformMatrix4(uniform_modelToCameraMatrix, false, tempMatrix4fBuffer);
 		ground.render();
 
-		Matrix4d planeMatrixRotX = Matrix4d.RotateXMatrix(planeRotateX);
-		Matrix4d planeMatrixRotY = Matrix4d.RotateYMatrix(planeRotateY);
-		Matrix4d planeMatrixRotZ = Matrix4d.RotateZMatrix(planeRotateZ);
-		Matrix4d planeMatrix = planeToWorldMatrix.mul(planeMatrixRotZ).mul(planeMatrixRotY).mul(planeMatrixRotX);
+		Matrix4 planeMatrixRotX = Matrix4.RotateXMatrix(planeRotateX);
+		Matrix4 planeMatrixRotY = Matrix4.RotateYMatrix(planeRotateY);
+		Matrix4 planeMatrixRotZ = Matrix4.RotateZMatrix(planeRotateZ);
+		Matrix4 planeMatrix = planeToWorldMatrix.mul(planeMatrixRotZ).mul(planeMatrixRotY).mul(planeMatrixRotX);
 
 		worldToCameraMatrix.mul(planeMatrix).store(tempMatrix4fBuffer);
 		GL20.glUniformMatrix4(uniform_modelToCameraMatrix, false, tempMatrix4fBuffer);

@@ -1,8 +1,8 @@
 package nl.zymo.gltut;
 
-public class Vector4d
+public class Vector4
 {
-	public Vector4d(double x, double y, double z, double w)
+	public Vector4(double x, double y, double z, double w)
 	{
 		this.x = x;
 		this.y = y;
