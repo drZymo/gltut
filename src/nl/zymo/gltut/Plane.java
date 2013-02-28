@@ -15,11 +15,11 @@ public class Plane implements AutoCloseable
 	private static final float vertexData[] =
 	{
         // Object positions        	// Object colors
-		 0, 0.2f, 1, 				0f, 0f, 1f, 1f, //0
-		 -1, 0, -1,					0.75f, 0.75f, 1f, 1f, //1
-		 0, 0.5f, -0.7f,			0f, 0f, 0.5f, 1f, //2
-		 1, 0, -1,					0.75f, 0.75f, 1f, 1f, //3
-		 0, 0.2f, -0.8f,			0f, 0f, 0.5f, 1f, //4
+		 0, 0f, 1, 					0f, 0f, 1f, 1f, //0
+		 -1, -0.2f, -1,				0.75f, 0.75f, 1f, 1f, //1
+		 0, 0.3f, -0.7f,			0f, 0f, 0.5f, 1f, //2
+		 1, -0.2f, -1,				0.75f, 0.75f, 1f, 1f, //3
+		 0, 0f, -0.8f,				0f, 0f, 0.5f, 1f, //4
 	};
 
 	private static final byte indexData[] =
