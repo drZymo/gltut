@@ -340,14 +340,16 @@ public class Window
 	private double camAngle = 0;
 	private double camTilt = -lookAt.y;
 
-	private double planeRotateX = 0;
-	private double planeRotateY = 0;
-	private double planeRotateZ = 0;
+	private Quaternion planeOrientation = Quaternion.Identity;
 
 	private static final double TAU = Math.PI * 2;
 
 	private static final double rotateStepBig = TAU / 180;
 	private static final double rotateStepSmall = TAU / 1440;
+
+	private static final Vector3 axisX = new Vector3(1, 0, 0);
+	private static final Vector3 axisY = new Vector3(0, 1, 0);
+	private static final Vector3 axisZ = new Vector3(0, 0, 1);
 
 	private void logic()
 	{
@@ -378,6 +380,10 @@ public class Window
 
 		double rotateStep = Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) ? rotateStepSmall : rotateStepBig;
 
+		double planeRotateX = 0;
+		double planeRotateY = 0;
+		double planeRotateZ = 0;
+
 		if (Keyboard.isKeyDown(Keyboard.KEY_S))
 		{
 			planeRotateX -= rotateStep;
@@ -403,9 +409,20 @@ public class Window
 			planeRotateZ += rotateStep;
 		}
 
-		planeRotateX = (planeRotateX + TAU) % TAU;
-		planeRotateY = (planeRotateY + TAU) % TAU;
-		planeRotateZ = (planeRotateZ + TAU) % TAU;
+		Quaternion planeOrientationDiff = Quaternion.Identity;
+		if (planeRotateX != 0)
+		{
+			planeOrientationDiff = new Quaternion(axisX, planeRotateX).mul(planeOrientationDiff);
+		}
+		if (planeRotateY != 0)
+		{
+			planeOrientationDiff = new Quaternion(axisY, planeRotateY).mul(planeOrientationDiff);
+		}
+		if (planeRotateZ != 0)
+		{
+			planeOrientationDiff = new Quaternion(axisZ, planeRotateZ).mul(planeOrientationDiff);
+		}
+		planeOrientation = planeOrientationDiff.mul(planeOrientation).normalize();
 
 
 		double time = getTime();
@@ -480,11 +497,7 @@ public class Window
 		GL20.glUniformMatrix4(uniform_modelToCameraMatrix, false, tempMatrix4fBuffer);
 		ground.render();
 
-		Matrix4 planeMatrixRotX = Matrix4.RotateXMatrix(planeRotateX);
-		Matrix4 planeMatrixRotY = Matrix4.RotateYMatrix(planeRotateY);
-		Matrix4 planeMatrixRotZ = Matrix4.RotateZMatrix(planeRotateZ);
-		Matrix4 planeMatrix = planeToWorldMatrix.mul(planeMatrixRotZ).mul(planeMatrixRotY).mul(planeMatrixRotX);
-
+		Matrix4 planeMatrix = planeToWorldMatrix.mul(planeOrientation.toMatrix());
 		worldToCameraMatrix.mul(planeMatrix).store(tempMatrix4fBuffer);
 		GL20.glUniformMatrix4(uniform_modelToCameraMatrix, false, tempMatrix4fBuffer);
 		plane.render();
