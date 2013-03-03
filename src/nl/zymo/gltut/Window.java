@@ -353,6 +353,17 @@ public class Window
 
 	private void logic()
 	{
+		while (Keyboard.next())
+		{
+			int key = Keyboard.getEventKey();
+			boolean state = Keyboard.getEventKeyState();
+
+			if (key == Keyboard.KEY_SPACE && state)
+			{
+				orientationMode = (orientationMode + 1) % 2;
+			}
+		}
+
 		double prevCamAngle = camAngle;
 		double prevCamTilt = camTilt;
 		if (Keyboard.isKeyDown(Keyboard.KEY_LEFT))
@@ -409,26 +420,43 @@ public class Window
 			planeRotateZ += rotateStep;
 		}
 
-		Quaternion planeOrientationDiff = Quaternion.Identity;
 		if (planeRotateX != 0)
 		{
-			planeOrientationDiff = new Quaternion(axisX, planeRotateX).mul(planeOrientationDiff);
+			OffsetOrientation(axisX, planeRotateX);
 		}
 		if (planeRotateY != 0)
 		{
-			planeOrientationDiff = new Quaternion(axisY, planeRotateY).mul(planeOrientationDiff);
+			OffsetOrientation(axisY, planeRotateY);
 		}
 		if (planeRotateZ != 0)
 		{
-			planeOrientationDiff = new Quaternion(axisZ, planeRotateZ).mul(planeOrientationDiff);
+			OffsetOrientation(axisZ, planeRotateZ);
 		}
-		planeOrientation = planeOrientationDiff.mul(planeOrientation).normalize();
 
 
 		double time = getTime();
 		double theta = (time / 5.0) * TAU;
 		double offsetZ = Math.sin(theta) * 0.75 + 0.25;
 		object2ToWorldMatrix = Matrix4.TranslationMatrix(0, 0, -offsetZ);
+	}
+
+
+	private static final int ORIENTATION_MODEL_RELATIVE = 0;
+	private static final int ORIENTATION_WORLD_RELATIVE = 1;
+
+	private int orientationMode = ORIENTATION_MODEL_RELATIVE;
+
+	private void OffsetOrientation(Vector3 axis, double angle)
+	{
+		Quaternion offset = new Quaternion(axis, angle);
+		if (orientationMode == ORIENTATION_MODEL_RELATIVE)
+		{
+			planeOrientation = planeOrientation.mul(offset);
+		}
+		else if (orientationMode == ORIENTATION_WORLD_RELATIVE)
+		{
+			planeOrientation = offset.mul(planeOrientation);
+		}
 	}
 
 	private static Matrix4 ComputeWorldToCameraMatrix(Vector3 lookAt, double angle, double tilt)
