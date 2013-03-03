@@ -295,4 +295,67 @@ public class Matrix4
 		buffer.put(14, (float)m43);
 		buffer.put(15, (float)m44);
 	}
+
+	public Quaternion toQuaternion()
+	{
+		double fourXSquaredMinus1 = m11 - m22 - m33;
+		double fourYSquaredMinus1 = m22 - m11 - m33;
+		double fourZSquaredMinus1 = m33 - m11 - m22;
+		double fourWSquaredMinus1 = m11 + m22 + m33;
+
+		int biggestIndex = 0;
+		double fourBiggestSquaredMinus1 = fourWSquaredMinus1;
+		if (fourXSquaredMinus1 > fourBiggestSquaredMinus1)
+		{
+			fourBiggestSquaredMinus1 = fourXSquaredMinus1;
+			biggestIndex = 1;
+		}
+		if (fourYSquaredMinus1 > fourBiggestSquaredMinus1)
+		{
+			fourBiggestSquaredMinus1 = fourYSquaredMinus1;
+			biggestIndex = 2;
+		}
+		if (fourZSquaredMinus1 > fourBiggestSquaredMinus1)
+		{
+			fourBiggestSquaredMinus1 = fourZSquaredMinus1;
+			biggestIndex = 3;
+		}
+
+		double biggestVal = Math.sqrt(fourBiggestSquaredMinus1 + 1) * 0.5;
+		double mult = 0.25 / biggestVal;
+
+		Quaternion result = null;
+		switch (biggestIndex)
+		{
+		case 0:
+			result = new Quaternion(
+					(m32 - m23) * mult,
+					(m13 - m31) * mult,
+					(m21 - m12) * mult,
+					biggestVal);
+			break;
+		case 1:
+			result = new Quaternion(
+					biggestVal,
+					(m21 + m12) * mult,
+					(m13 + m31) * mult,
+					(m32 - m23) * mult);
+			break;
+		case 2:
+			result = new Quaternion(
+					(m21 + m12) * mult,
+					biggestVal,
+					(m32 + m23) * mult,
+					(m13 - m31) * mult);
+			break;
+		case 3:
+			result = new Quaternion(
+					(m13 + m31) * mult,
+					(m32 + m23) * mult,
+					biggestVal,
+					(m21 - m12) * mult);
+			break;
+		}
+		return result;
+	}
 }

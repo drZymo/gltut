@@ -47,6 +47,11 @@ public class Quaternion
 		return new Quaternion(x / magnitude, y / magnitude, z / magnitude, w / magnitude);
 	}
 
+	public Quaternion conjugate()
+	{
+		return new Quaternion(-x, -y, -z, w);
+	}
+
 	public Matrix4 toMatrix()
 	{
 		return new Matrix4(

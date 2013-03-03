@@ -360,7 +360,7 @@ public class Window
 
 			if (key == Keyboard.KEY_SPACE && state)
 			{
-				orientationMode = (orientationMode + 1) % 2;
+				cycleOrientationMode();
 			}
 		}
 
@@ -432,6 +432,7 @@ public class Window
 		{
 			OffsetOrientation(axisZ, planeRotateZ);
 		}
+		planeOrientation = planeOrientation.normalize();
 
 
 		double time = getTime();
@@ -440,11 +441,16 @@ public class Window
 		object2ToWorldMatrix = Matrix4.TranslationMatrix(0, 0, -offsetZ);
 	}
 
-
 	private static final int ORIENTATION_MODEL_RELATIVE = 0;
 	private static final int ORIENTATION_WORLD_RELATIVE = 1;
+	private static final int ORIENTATION_CAMERA_RELATIVE = 2;
 
 	private int orientationMode = ORIENTATION_MODEL_RELATIVE;
+
+	private void cycleOrientationMode()
+	{
+		orientationMode = (orientationMode + 1) % 3;
+	}
 
 	private void OffsetOrientation(Vector3 axis, double angle)
 	{
@@ -456,6 +462,14 @@ public class Window
 		else if (orientationMode == ORIENTATION_WORLD_RELATIVE)
 		{
 			planeOrientation = offset.mul(planeOrientation);
+		}
+		else if (orientationMode == ORIENTATION_CAMERA_RELATIVE)
+		{
+			Matrix4 camMat = ComputeWorldToCameraMatrix(lookAt, camAngle, camTilt);
+			Quaternion camQuat = camMat.toQuaternion();
+			Quaternion invCamQuat = camQuat.conjugate();
+			Quaternion worldQuat = invCamQuat.mul(offset).mul(camQuat);
+			planeOrientation = worldQuat.mul(planeOrientation);
 		}
 	}
 
