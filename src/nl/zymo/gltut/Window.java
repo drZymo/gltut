@@ -33,6 +33,9 @@ public class Window
 	private Matrix4 shipToWorldMatrix = Matrix4.Identity;
 	private Quaternion shipOrientation = Quaternion.Identity;
 
+	private Cylinder cylinder;
+	private Matrix4 cylinderToWorldMatrix = Matrix4.Identity;
+
 
 	public Window(int width, int height, String title)
 	{
@@ -51,7 +54,10 @@ public class Window
 		groundToWorldMatrix = Matrix4.ScaleMatrix(5, 0.01, 5);
 
 		ship = new Ship(attrib_position, attrib_color);
-		shipToWorldMatrix = Matrix4.TranslationMatrix(0, 2, 0);
+		shipToWorldMatrix = Matrix4.TranslationMatrix(0, 3, 0);
+
+		cylinder = new Cylinder(attrib_position, attrib_color);
+		cylinderToWorldMatrix = Matrix4.TranslationMatrix(0, 1, 0);
 
 		initializeShaderProgram();
 
@@ -67,6 +73,7 @@ public class Window
 			Display.update();
 		}
 
+		cylinder.close();
 		ship.close();
 		ground.close();
 
@@ -209,9 +216,9 @@ public class Window
 		return shaderId;
 	}
 
-	private Vector3 lookAt = new Vector3(0, 2, 0);
-	private double camAngle = 0;
-	private double camTilt = -lookAt.y;
+	private Vector3 lookAt = new Vector3(0, 3, 0);
+	private double camAngle = 90;
+	private double camTilt = -30;
 
 	private static final double TAU = Math.PI * 2;
 
@@ -338,9 +345,11 @@ public class Window
 		}
 	}
 
+	private static final double CAMERA_DISTANCE = 7;
+
 	private static Matrix4 ComputeWorldToCameraMatrix(Vector3 lookAt, double angle, double tilt)
 	{
-		Vector3 cameraPos = ResolveCameraPosition(angle, tilt, 5);
+		Vector3 cameraPos = ResolveCameraPosition(angle, tilt, CAMERA_DISTANCE);
 		Vector3 up = new Vector3(0, 1, 0);
 
 		Vector3 lookDir = lookAt.sub(cameraPos).normalize();
@@ -395,6 +404,10 @@ public class Window
 		worldToCameraMatrix.mul(shipMatrix).store(tempMatrix4fBuffer);
 		GL20.glUniformMatrix4(uniform_modelToCameraMatrix, false, tempMatrix4fBuffer);
 		ship.render();
+
+		worldToCameraMatrix.mul(cylinderToWorldMatrix).store(tempMatrix4fBuffer);
+		GL20.glUniformMatrix4(uniform_modelToCameraMatrix, false, tempMatrix4fBuffer);
+		cylinder.render();
 
 		GL20.glUseProgram(0);
 
