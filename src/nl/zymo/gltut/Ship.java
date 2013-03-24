@@ -10,7 +10,7 @@ import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL32;
 
-public class Plane implements AutoCloseable
+public class Ship implements AutoCloseable
 {
 	private static final float vertexData[] =
 	{
@@ -37,7 +37,7 @@ public class Plane implements AutoCloseable
 	private int vertexBufferObject;
 	private int elementBufferObject;
 
-	public Plane(int attrib_position, int attrib_color)
+	public Ship(int attrib_position, int attrib_color)
 	{
 		vertexArrayObject = GL30.glGenVertexArrays();
 		GL30.glBindVertexArray(vertexArrayObject);

@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 
 import org.lwjgl.BufferUtils;
@@ -16,10 +15,7 @@ import org.lwjgl.opengl.ContextAttribs;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
-import org.lwjgl.opengl.GL30;
-import org.lwjgl.opengl.GL32;
 import org.lwjgl.opengl.PixelFormat;
 import org.lwjgl.util.glu.GLU;
 
@@ -33,8 +29,9 @@ public class Window
 	private Matrix4 groundToWorldMatrix = Matrix4.Identity;
 
 
-	private Plane plane;
-	private Matrix4 planeToWorldMatrix = Matrix4.Identity;
+	private Ship ship;
+	private Matrix4 shipToWorldMatrix = Matrix4.Identity;
+	private Quaternion shipOrientation = Quaternion.Identity;
 
 
 	public Window(int width, int height, String title)
@@ -49,13 +46,12 @@ public class Window
 		setupOpenGL();
 
 		createShaderProgram();
-		createVertexBuffers();
 
 		ground = new Cube(attrib_position, attrib_color);
 		groundToWorldMatrix = Matrix4.ScaleMatrix(5, 0.01, 5);
 
-		plane = new Plane(attrib_position, attrib_color);
-		planeToWorldMatrix = Matrix4.TranslationMatrix(0, 2, 0);
+		ship = new Ship(attrib_position, attrib_color);
+		shipToWorldMatrix = Matrix4.TranslationMatrix(0, 2, 0);
 
 		initializeShaderProgram();
 
@@ -71,10 +67,9 @@ public class Window
 			Display.update();
 		}
 
-		plane.close();
+		ship.close();
 		ground.close();
 
-		destroyVertexBuffers();
 		destroyShaderProgram();
 
 		destroyOpenGL();
@@ -117,125 +112,6 @@ public class Window
 	{
 		Display.destroy();
 	}
-
-	private static final float vertexData[] =
-	{
-        //Object 1 positions        //Object 1 colors
-        -0.8f, 0.2f, -1.75f,        0.75f, 0.75f, 1.0f, 1.0f,
-        -0.8f, 0.0f, -1.25f,        0.75f, 0.75f, 1.0f, 1.0f,
-        0.8f, 0.0f, -1.25f,         0.75f, 0.75f, 1.0f, 1.0f,
-        0.8f, 0.2f, -1.75f,         0.75f, 0.75f, 1.0f, 1.0f,
-
-        -0.8f, -0.2f, -1.75f,       0.0f, 0.5f, 0.0f, 1.0f,
-        -0.8f, 0.0f, -1.25f,        0.0f, 0.5f, 0.0f, 1.0f,
-        0.8f, 0.0f, -1.25f,         0.0f, 0.5f, 0.0f, 1.0f,
-        0.8f, -0.2f, -1.75f,        0.0f, 0.5f, 0.0f, 1.0f,
-
-        -0.8f, 0.2f, -1.75f,        1.0f, 0.0f, 0.0f, 1.0f,
-        -0.8f, 0.0f, -1.25f,        1.0f, 0.0f, 0.0f, 1.0f,
-        -0.8f, -0.2f, -1.75f,       1.0f, 0.0f, 0.0f, 1.0f,
-
-        0.8f, 0.2f, -1.75f,         0.8f, 0.8f, 0.8f, 1.0f,
-        0.8f, 0.0f, -1.25f,         0.8f, 0.8f, 0.8f, 1.0f,
-        0.8f, -0.2f, -1.75f,        0.8f, 0.8f, 0.8f, 1.0f,
-
-        -0.8f, -0.2f, -1.75f,       0.5f, 0.5f, 0.0f, 1.0f,
-        -0.8f, 0.2f, -1.75f,        0.5f, 0.5f, 0.0f, 1.0f,
-        0.8f, 0.2f, -1.75f,         0.5f, 0.5f, 0.0f, 1.0f,
-        0.8f, -0.2f, -1.75f,        0.5f, 0.5f, 0.0f, 1.0f,
-
-        //Object 2 positions        //Object 2 colors
-        0.2f, 0.8f, -1.75f,         1.0f, 0.0f, 0.0f, 1.0f,
-        0.0f, 0.8f, -1.25f,         1.0f, 0.0f, 0.0f, 1.0f,
-        0.0f, -0.8f, -1.25f,        1.0f, 0.0f, 0.0f, 1.0f,
-        0.2f, -0.8f, -1.75f,        1.0f, 0.0f, 0.0f, 1.0f,
-
-        -0.2f, 0.8f, -1.75f,        0.5f, 0.5f, 0.0f, 1.0f,
-        0.0f, 0.8f, -1.25f,         0.5f, 0.5f, 0.0f, 1.0f,
-        0.0f, -0.8f, -1.25f,        0.5f, 0.5f, 0.0f, 1.0f,
-        -0.2f, -0.8f, -1.75f,       0.5f, 0.5f, 0.0f, 1.0f,
-
-        0.2f, 0.8f, -1.75f,         0.0f, 0.5f, 0.0f, 1.0f,
-        0.0f, 0.8f, -1.25f,         0.0f, 0.5f, 0.0f, 1.0f,
-        -0.2f, 0.8f, -1.75f,        0.0f, 0.5f, 0.0f, 1.0f,
-
-        0.2f, -0.8f, -1.75f,        0.75f, 0.75f, 1.0f, 1.0f,
-        0.0f, -0.8f, -1.25f,        0.75f, 0.75f, 1.0f, 1.0f,
-        -0.2f, -0.8f, -1.75f,       0.75f, 0.75f, 1.0f, 1.0f,
-
-        -0.2f, 0.8f, -1.75f,        0.8f, 0.8f, 0.8f, 1.0f,
-        0.2f, 0.8f, -1.75f,         0.8f, 0.8f, 0.8f, 1.0f,
-        0.2f, -0.8f, -1.75f,        0.8f, 0.8f, 0.8f, 1.0f,
-        -0.2f, -0.8f, -1.75f,       0.8f, 0.8f, 0.8f, 1.0f,
-	};
-
-	private static final byte indexData[] =
-	{
-		0, 2, 1,
-		3, 2, 0,
-
-		4, 5, 6,
-		6, 7, 4,
-
-		8, 9, 10,
-		11, 13, 12,
-
-		14, 16, 15,
-		17, 16, 14,
-	};
-
-
-	private int vertexArrayObject;
-	private int vertexBufferObject;
-	private int elementBufferObject;
-
-	private void createVertexBuffers()
-	{
-		vertexArrayObject = GL30.glGenVertexArrays();
-		GL30.glBindVertexArray(vertexArrayObject);
-
-
-		FloatBuffer vertexBuffer = BufferUtils.createFloatBuffer(vertexData.length);
-		vertexBuffer.put(vertexData);
-		vertexBuffer.flip();
-
-		vertexBufferObject = GL15.glGenBuffers();
-		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vertexBufferObject);
-		GL15.glBufferData(GL15.GL_ARRAY_BUFFER, vertexBuffer, GL15.GL_STATIC_DRAW);
-
-		int stride = 7 * 4;
-		GL20.glEnableVertexAttribArray(attrib_position);
-		GL20.glVertexAttribPointer(attrib_position, 3, GL11.GL_FLOAT, false, stride, 0);
-		GL20.glEnableVertexAttribArray(attrib_color);
-		GL20.glVertexAttribPointer(attrib_color, 4, GL11.GL_FLOAT, false, stride, 3 * 4);
-
-
-		ByteBuffer elementBuffer = BufferUtils.createByteBuffer(indexData.length);
-		elementBuffer.put(indexData);
-		elementBuffer.flip();
-
-		elementBufferObject = GL15.glGenBuffers();
-		GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, elementBufferObject);
-		GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, elementBuffer, GL15.GL_STATIC_DRAW);
-
-		GL30.glBindVertexArray(0);
-
-		exitOnGLError("createVertexBuffers");
-	}
-
-	private void destroyVertexBuffers()
-	{
-		GL15.glDeleteBuffers(elementBufferObject);
-		elementBufferObject = 0;
-		GL15.glDeleteBuffers(vertexBufferObject);
-		vertexBufferObject = 0;
-
-		GL30.glDeleteVertexArrays(vertexArrayObject);
-		vertexArrayObject = 0;
-
-		exitOnGLError("destroyVertexBuffers");
-	}
-
 
 	private int programId;
 
@@ -333,14 +209,9 @@ public class Window
 		return shaderId;
 	}
 
-	private Matrix4 object1ToWorldMatrix = Matrix4.Identity;
-	private Matrix4 object2ToWorldMatrix = Matrix4.Identity;
-
 	private Vector3 lookAt = new Vector3(0, 2, 0);
 	private double camAngle = 0;
 	private double camTilt = -lookAt.y;
-
-	private Quaternion planeOrientation = Quaternion.Identity;
 
 	private static final double TAU = Math.PI * 2;
 
@@ -391,54 +262,48 @@ public class Window
 
 		double rotateStep = Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) ? rotateStepSmall : rotateStepBig;
 
-		double planeRotateX = 0;
-		double planeRotateY = 0;
-		double planeRotateZ = 0;
+		double shipRotateX = 0;
+		double shipRotateY = 0;
+		double shipRotateZ = 0;
 
 		if (Keyboard.isKeyDown(Keyboard.KEY_S))
 		{
-			planeRotateX -= rotateStep;
+			shipRotateX -= rotateStep;
 		}
 		if (Keyboard.isKeyDown(Keyboard.KEY_W))
 		{
-			planeRotateX += rotateStep;
+			shipRotateX += rotateStep;
 		}
 		if (Keyboard.isKeyDown(Keyboard.KEY_Q))
 		{
-			planeRotateY -= rotateStep;
+			shipRotateY -= rotateStep;
 		}
 		if (Keyboard.isKeyDown(Keyboard.KEY_E))
 		{
-			planeRotateY +=rotateStep;
+			shipRotateY +=rotateStep;
 		}
 		if (Keyboard.isKeyDown(Keyboard.KEY_A))
 		{
-			planeRotateZ -= rotateStep;
+			shipRotateZ -= rotateStep;
 		}
 		if (Keyboard.isKeyDown(Keyboard.KEY_D))
 		{
-			planeRotateZ += rotateStep;
+			shipRotateZ += rotateStep;
 		}
 
-		if (planeRotateX != 0)
+		if (shipRotateX != 0)
 		{
-			OffsetOrientation(axisX, planeRotateX);
+			OffsetOrientation(axisX, shipRotateX);
 		}
-		if (planeRotateY != 0)
+		if (shipRotateY != 0)
 		{
-			OffsetOrientation(axisY, planeRotateY);
+			OffsetOrientation(axisY, shipRotateY);
 		}
-		if (planeRotateZ != 0)
+		if (shipRotateZ != 0)
 		{
-			OffsetOrientation(axisZ, planeRotateZ);
+			OffsetOrientation(axisZ, shipRotateZ);
 		}
-		planeOrientation = planeOrientation.normalize();
-
-
-		double time = getTime();
-		double theta = (time / 5.0) * TAU;
-		double offsetZ = Math.sin(theta) * 0.75 + 0.25;
-		object2ToWorldMatrix = Matrix4.TranslationMatrix(0, 0, -offsetZ);
+		shipOrientation = shipOrientation.normalize();
 	}
 
 	private static final int ORIENTATION_MODEL_RELATIVE = 0;
@@ -457,11 +322,11 @@ public class Window
 		Quaternion offset = new Quaternion(axis, angle);
 		if (orientationMode == ORIENTATION_MODEL_RELATIVE)
 		{
-			planeOrientation = planeOrientation.mul(offset);
+			shipOrientation = shipOrientation.mul(offset);
 		}
 		else if (orientationMode == ORIENTATION_WORLD_RELATIVE)
 		{
-			planeOrientation = offset.mul(planeOrientation);
+			shipOrientation = offset.mul(shipOrientation);
 		}
 		else if (orientationMode == ORIENTATION_CAMERA_RELATIVE)
 		{
@@ -469,7 +334,7 @@ public class Window
 			Quaternion camQuat = camMat.toQuaternion();
 			Quaternion invCamQuat = camQuat.conjugate();
 			Quaternion worldQuat = invCamQuat.mul(offset).mul(camQuat);
-			planeOrientation = worldQuat.mul(planeOrientation);
+			shipOrientation = worldQuat.mul(shipOrientation);
 		}
 	}
 
@@ -520,29 +385,16 @@ public class Window
 
 		GL20.glUseProgram(programId);
 
-		GL30.glBindVertexArray(vertexArrayObject);
-
 		FloatBuffer tempMatrix4fBuffer = BufferUtils.createFloatBuffer(16);
-
-		worldToCameraMatrix.mul(object1ToWorldMatrix).store(tempMatrix4fBuffer);
-		GL20.glUniformMatrix4(uniform_modelToCameraMatrix, false, tempMatrix4fBuffer);
-		GL32.glDrawElementsBaseVertex(GL11.GL_TRIANGLES, indexData.length, GL11.GL_UNSIGNED_BYTE, 0, 0);
-
-		worldToCameraMatrix.mul(object2ToWorldMatrix).store(tempMatrix4fBuffer);
-		GL20.glUniformMatrix4(uniform_modelToCameraMatrix, false, tempMatrix4fBuffer);
-		GL32.glDrawElementsBaseVertex(GL11.GL_TRIANGLES, indexData.length, GL11.GL_UNSIGNED_BYTE, 0, 18);
-
-		GL30.glBindVertexArray(0);
-
 
 		worldToCameraMatrix.mul(groundToWorldMatrix).store(tempMatrix4fBuffer);
 		GL20.glUniformMatrix4(uniform_modelToCameraMatrix, false, tempMatrix4fBuffer);
 		ground.render();
 
-		Matrix4 planeMatrix = planeToWorldMatrix.mul(planeOrientation.toMatrix());
-		worldToCameraMatrix.mul(planeMatrix).store(tempMatrix4fBuffer);
+		Matrix4 shipMatrix = shipToWorldMatrix.mul(shipOrientation.toMatrix());
+		worldToCameraMatrix.mul(shipMatrix).store(tempMatrix4fBuffer);
 		GL20.glUniformMatrix4(uniform_modelToCameraMatrix, false, tempMatrix4fBuffer);
-		plane.render();
+		ship.render();
 
 		GL20.glUseProgram(0);
 
